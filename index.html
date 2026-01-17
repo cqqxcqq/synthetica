@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synthetica Ecosystem - Live Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-card-hover: #1a1a25;
+            --accent-primary: #7c3aed;
+            --accent-secondary: #06b6d4;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #2d2d3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-30px) translateX(20px); }
+            50% { transform: translateY(-10px) translateX(-20px); }
+            75% { transform: translateY(-40px) translateX(10px); }
+        }
+
+        /* Header */
+        header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(18, 18, 26, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Main Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1400px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.1);
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            background: rgba(124, 58, 237, 0.1);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-header h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .card-body {
+            padding: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .card-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .card-body::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        .card-body::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        /* World Map */
+        .world-map {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+            min-height: 400px;
+        }
+
+        .location {
+            background: rgba(124, 58, 237, 0.05);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .location:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .location.the-archive { grid-column: 1; grid-row: 1; border-color: #818cf8; }
+        .location.the-market { grid-column: 2; grid-row: 1; border-color: #fbbf24; }
+        .location.the-void { grid-column: 3; grid-row: 1; border-color: #6366f1; }
+        .location.the-nexus { grid-column: 2; grid-row: 2; border-color: #a855f7; }
+        .location.the-garden { grid-column: 1; grid-row: 2; border-color: #34d399; }
+
+        .location-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-agents {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-content: flex-start;
+        }
+
+        /* Agent Tokens */
+        .agent-token {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .agent-token:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .agent-token.oracle { background: linear-gradient(135deg, #818cf8, #6366f1); }
+        .agent-token.merchant { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .agent-token.diplomat { background: linear-gradient(135deg, #34d399, #10b981); }
+        .agent-token.rogue { background: linear-gradient(135deg, #f87171, #ef4444); }
+        .agent-token.guardian { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+        .agent-token.shadow { background: linear-gradient(135deg, #a78bfa, #8b5cf6); }
+
+        .agent-token.dormant {
+            filter: grayscale(1) brightness(0.5);
+            animation: pulse-dormant 2s infinite;
+        }
+
+        @keyframes pulse-dormant {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+
+        .agent-tooltip {
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-dark);
+            border: 1px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+            font-size: 0.85rem;
+        }
+
+        .agent-token:hover .agent-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Agent List */
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .agent-item:hover {
+            background: rgba(124, 58, 237, 0.1);
+            border-color: var(--accent-primary);
+        }
+
+        .agent-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .agent-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .agent-drive {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .agent-stats {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-energy { color: #fbbf24; }
+        .stat-bits { color: #10b981; }
+        .stat-influence { color: #a855f7; }
+
+        /* Chat/Event Log */
+        .chat-message {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--accent-primary);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .chat-message.event {
+            border-left-color: var(--accent-warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .chat-message.action {
+            border-left-color: var(--accent-secondary);
+        }
+
+        .chat-message.speech {
+            border-left-color: var(--accent-success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .chat-message.negative {
+            border-left-color: var(--accent-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .chat-sender {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chat-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+
+        .chat-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .chat-speech {
+            font-style: italic;
+            color: var(--text-primary);
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Orbitron', monospace;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #9333ea);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn.active {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+            50% { box-shadow: 0 0 20px 5px rgba(124, 58, 237, 0.2); }
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1rem;
+            background: rgba(18, 18, 26, 0.9);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Skill Bar */
+        .skill-bar {
+            height: 6px;
+            background: var(--bg-dark);
+            border-radius: 3px;
+            margin-top: 0.25rem;
+            overflow: hidden;
+        }
+
+        .skill-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Relationship indicator */
+        .relationship {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .relationship.positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .relationship.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .relationship.neutral {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+
+    <header>
+        <h1>SYNTHETICA</h1>
+        <p class="subtitle">Autonomous Agent Ecosystem Simulation</p>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="tick-count">0</div>
+            <div class="stat-label">Tick</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="active-count">0</div>
+            <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="dormant-count">0</div>
+            <div class="stat-label">Dormant</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="total-bits">0</div>
+            <div class="stat-label">Total Bits</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="event-count">0</div>
+            <div class="stat-label">Events</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-primary" id="btn-tick">Run Tick</button>
+        <button class="btn btn-primary" id="btn-auto">Auto Run</button>
+        <button class="btn btn-secondary" id="btn-stop" style="display:none;">Stop</button>
+        <button class="btn btn-danger" id="btn-reset">Reset</button>
+        <select class="btn btn-secondary" id="speed-select">
+            <option value="3000">Slow (3s)</option>
+            <option value="1500" selected>Normal (1.5s)</option>
+            <option value="500">Fast (0.5s)</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <!-- Agent List -->
+        <div class="card">
+            <div class="card-header">
+                <span>&#128101;</span>
+                <h2>AGENTS</h2>
+            </div>
+            <div class="card-body" id="agent-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Initializing ecosystem...
+                </div>
+            </div>
+        </div>
+
+        <!-- World Map -->
+        <div class="card">
+            <div class="card-header">
+                <span>&#127758;</span>
+                <h2>WORLD MAP</h2>
+            </div>
+            <div class="world-map" id="world-map">
+                <div class="location the-archive" data-location="The Archive">
+                    <div class="location-name">&#128218; The Archive</div>
+                    <div class="location-agents"></div>
+                </div>
+                <div class="location the-market" data-location="The Market">
+                    <div class="location-name">&#128176; The Market</div>
+                    <div class="location-agents"></div>
+                </div>
+                <div class="location the-void" data-location="The Void">
+                    <div class="location-name">&#127756; The Void</div>
+                    <div class="location-agents"></div>
+                </div>
+                <div class="location the-garden" data-location="The Garden">
+                    <div class="location-name">&#127793; The Garden</div>
+                    <div class="location-agents"></div>
+                </div>
+                <div class="location the-nexus" data-location="The Nexus">
+                    <div class="location-name">&#9889; The Nexus</div>
+                    <div class="location-agents"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Log / Chat -->
+        <div class="card">
+            <div class="card-header">
+                <span>&#128172;</span>
+                <h2>LIVE FEED</h2>
+            </div>
+            <div class="card-body" id="chat-log">
+                <div class="chat-message event">
+                    <div class="chat-sender">
+                        <span>&#127758;</span> System
+                        <span class="chat-time">Now</span>
+                    </div>
+                    <div class="chat-text">Welcome to Synthetica! Click "Run Tick" to begin the simulation.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============== SIMULATION DATA ==============
+        const LOCATIONS = ["The Archive", "The Market", "The Void", "The Nexus", "The Garden"];
+        
+        const ARCHETYPES = [
+            { name: "Oracle", drive: "Seek Knowledge", traits: ["Curious", "Cautious", "Honest"], emoji: "&#128302;" },
+            { name: "Merchant", drive: "Hoard Wealth", traits: ["Greedy", "Cunning", "Suspicious"], emoji: "&#128176;" },
+            { name: "Diplomat", drive: "Build Alliances", traits: ["Generous", "Peaceful", "Manipulative"], emoji: "&#129309;" },
+            { name: "Rogue", drive: "Spread Chaos", traits: ["Aggressive", "Cunning", "Greedy"], emoji: "&#128123;" },
+            { name: "Guardian", drive: "Seek Balance", traits: ["Cautious", "Altruistic", "Honest"], emoji: "&#128737;" },
+            { name: "Shadow", drive: "Collect Secrets", traits: ["Suspicious", "Curious", "Manipulative"], emoji: "&#128065;" }
+        ];
+
+        const WORLD_EVENTS = [
+            { name: "Market Boom", emoji: "&#128200;", locations: ["The Market"], effect: "bits", delta: 3 },
+            { name: "Void Storm", emoji: "&#127754;", locations: ["The Void"], effect: "energy", delta: -3 },
+            { name: "Archive Discovery", emoji: "&#128220;", locations: ["The Archive"], effect: "influence", delta: 4 },
+            { name: "Garden Festival", emoji: "&#127800;", locations: ["The Garden"], effect: "energy", delta: 4 },
+            { name: "Eclipse", emoji: "&#127761;", locations: LOCATIONS, effect: "energy", delta: -1 }
+        ];
+
+        const CONVERSATIONS = {
+            TALK: {
+                positive: [
+                    "I've been thinking about our shared interests lately...",
+                    "Tell me, what wisdom have you gathered today?",
+                    "Your presence here is most welcome, friend.",
+                    "Perhaps we could find mutual benefit in cooperation?",
+                    "The ecosystem grows more interesting with each passing tick.",
+                    "I sense great potential in our collaboration."
+                ],
+                negative: [
+                    "Hmph. What do YOU want?",
+                    "I have nothing to say to the likes of you.",
+                    "Watch yourself around here.",
+                    "Our last encounter still weighs on my mind...",
+                    "Trust must be earned, not assumed."
+                ]
+            },
+            TRADE: {
+                success: [
+                    "A fair exchange benefits us both!",
+                    "Pleasure doing business with you.",
+                    "Your bits are most appreciated.",
+                    "Consider it a wise investment.",
+                    "The Market smiles upon this deal!"
+                ],
+                fail: [
+                    "Perhaps another time...",
+                    "Your offer does not interest me.",
+                    "I cannot accept these terms.",
+                    "The price is simply too steep."
+                ]
+            },
+            GOSSIP: [
+                "Have you heard what they're saying about {target}?",
+                "Between us... {target} cannot be trusted.",
+                "I have information about {target} that might interest you.",
+                "{target}'s reputation precedes them, don't you think?",
+                "Word travels fast in Synthetica... especially about {target}."
+            ],
+            STEAL: {
+                success: [
+                    "Too easy...",
+                    "They'll never know what happened.",
+                    "Bits transfer complete. Silent and swift.",
+                    "The shadows favor the bold."
+                ],
+                fail: [
+                    "Curses! I've been spotted!",
+                    "This won't be forgotten...",
+                    "A tactical retreat is needed.",
+                    "Next time I'll be more careful."
+                ]
+            },
+            BETRAY: [
+                "Nothing personal... just business.",
+                "You trusted too easily.",
+                "Survival demands difficult choices.",
+                "I warned you about my nature."
+            ],
+            ALLY: [
+                "Together, we are stronger!",
+                "Our alliance will reshape the ecosystem!",
+                "From this moment, your enemies are my enemies.",
+                "A pact sealed in mutual respect."
+            ],
+            REVIVE: [
+                "Rise again, friend. The ecosystem needs you.",
+                "Your story isn't over yet.",
+                "I couldn't let you fade into the Void.",
+                "Consider this debt repaid through loyalty."
+            ]
+        };
+
+        // ============== STATE ==============
+        let simulation = {
+            agents: {},
+            tickCount: 0,
+            logs: [],
+            eventHistory: [],
+            isRunning: false,
+            intervalId: null
+        };
+
+        // ============== AGENT CLASS ==============
+        class Agent {
+            constructor(archetype, id) {
+                this.id = id || Math.random().toString(36).substr(2, 8);
+                this.name = archetype.name;
+                this.drive = archetype.drive;
+                this.traits = archetype.traits;
+                this.emoji = archetype.emoji;
+                this.location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+                this.energy = 10 + Math.floor(Math.random() * 5);
+                this.bits = 5 + Math.floor(Math.random() * 5);
+                this.influence = 0;
+                this.isDormant = false;
+                this.relationships = {};
+                this.skills = { negotiation: 0, stealth: 0, diplomacy: 0, survival: 0, observation: 0, leadership: 0 };
+            }
+
+            getRelationship(otherId) {
+                return this.relationships[otherId] || 0;
+            }
+
+            updateRelationship(otherId, delta) {
+                const current = this.relationships[otherId] || 0;
+                this.relationships[otherId] = Math.max(-100, Math.min(100, current + delta));
+            }
+
+            improveSkill(skill, amount = 1) {
+                if (this.skills[skill] !== undefined) {
+                    this.skills[skill] = Math.min(100, this.skills[skill] + amount);
+                }
+            }
+
+            getTopSkill() {
+                let top = { name: 'none', value: 0 };
+                for (const [name, value] of Object.entries(this.skills)) {
+                    if (value > top.value) {
+                        top = { name, value };
+                    }
+                }
+                return top;
+            }
+        }
+
+        // ============== SIMULATION LOGIC ==============
+        function initializeAgents() {
+            simulation.agents = {};
+            ARCHETYPES.forEach(arch => {
+                const agent = new Agent(arch);
+                simulation.agents[agent.id] = agent;
+            });
+            simulation.tickCount = 0;
+            simulation.logs = [];
+            simulation.eventHistory = [];
+        }
+
+        function getAgentsAtLocation(location) {
+            return Object.values(simulation.agents).filter(a => a.location === location && !a.isDormant);
+        }
+
+        function getActiveAgents() {
+            return Object.values(simulation.agents).filter(a => !a.isDormant);
+        }
+
+        function pickRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function triggerWorldEvent() {
+            if (Math.random() > 0.15) return null;
+            
+            const event = pickRandom(WORLD_EVENTS);
+            const affected = [];
+
+            getActiveAgents().forEach(agent => {
+                if (event.locations.includes(agent.location)) {
+                    affected.push(agent.name);
+                    if (event.effect === 'bits') agent.bits = Math.max(0, agent.bits + event.delta);
+                    else if (event.effect === 'energy') agent.energy = Math.max(0, Math.min(20, agent.energy + event.delta));
+                    else if (event.effect === 'influence') agent.influence += event.delta;
+                }
+            });
+
+            if (affected.length > 0) {
+                simulation.eventHistory.push({ name: event.name, tick: simulation.tickCount });
+                addChatMessage('event', 'World Event', `${event.emoji} ${event.name}! Affected: ${affected.join(', ')}`);
+            }
+
+            return event;
+        }
+
+        function decideAction(agent, others) {
+            const actions = ['REST', 'OBSERVE', 'MOVE'];
+            
+            if (others.length > 0) {
+                actions.push('TALK', 'TALK', 'TRADE', 'GOSSIP');
+                
+                const hasEnemy = others.some(o => agent.getRelationship(o.id) < -30);
+                const hasFriend = others.some(o => agent.getRelationship(o.id) > 30);
+                
+                if (agent.traits.includes('Aggressive') || agent.traits.includes('Cunning')) {
+                    actions.push('STEAL');
+                }
+                if (hasFriend) {
+                    actions.push('ALLY', 'COUNCIL');
+                }
+                if (hasEnemy && agent.traits.includes('Aggressive')) {
+                    actions.push('BETRAY');
+                }
+            }
+
+            // Dormant allies to revive?
+            const dormantAllies = Object.values(simulation.agents).filter(
+                a => a.isDormant && a.location === agent.location && agent.getRelationship(a.id) > 40
+            );
+            if (dormantAllies.length > 0 && agent.bits >= 5 && agent.energy >= 3) {
+                actions.push('REVIVE');
+            }
+
+            if (agent.energy < 5) {
+                return { action: 'REST', target: null };
+            }
+
+            const action = pickRandom(actions);
+            let target = null;
+
+            if (['TALK', 'TRADE', 'STEAL', 'ALLY', 'BETRAY', 'GOSSIP'].includes(action) && others.length > 0) {
+                target = pickRandom(others);
+            } else if (action === 'MOVE') {
+                const otherLocs = LOCATIONS.filter(l => l !== agent.location);
+                target = pickRandom(otherLocs);
+            } else if (action === 'REVIVE' && dormantAllies.length > 0) {
+                target = pickRandom(dormantAllies);
+            }
+
+            return { action, target };
+        }
+
+        function executeAction(agent, action, target, others) {
+            let result = { text: '', type: 'action', speech: null };
+
+            switch (action) {
+                case 'REST':
+                    const recovery = 3 + Math.floor(agent.skills.survival / 20);
+                    agent.energy = Math.min(20, agent.energy + recovery);
+                    agent.improveSkill('survival');
+                    result.text = `${agent.name} rested and recovered ${recovery} energy.`;
+                    break;
+
+                case 'OBSERVE':
+                    agent.improveSkill('observation');
+                    if (others.length > 0) {
+                        result.text = `${agent.name} carefully observed ${others.map(o => o.name).join(', ')}.`;
+                    } else {
+                        result.text = `${agent.name} scanned the quiet surroundings.`;
+                    }
+                    break;
+
+                case 'MOVE':
+                    if (target) {
+                        const oldLoc = agent.location;
+                        agent.location = target;
+                        agent.energy = Math.max(0, agent.energy - 2);
+                        result.text = `${agent.name} traveled from ${oldLoc} to ${target}.`;
+                    }
+                    break;
+
+                case 'TALK':
+                    if (target) {
+                        const rel = agent.getRelationship(target.id);
+                        const delta = Math.floor(Math.random() * 12) - 3;
+                        agent.updateRelationship(target.id, delta);
+                        target.updateRelationship(agent.id, delta);
+                        agent.improveSkill('negotiation');
+                        
+                        const direction = delta > 0 ? 'improved' : delta < 0 ? 'worsened' : 'unchanged';
+                        result.text = `${agent.name} talked with ${target.name}. Relationship ${direction}.`;
+                        result.speech = pickRandom(delta >= 0 ? CONVERSATIONS.TALK.positive : CONVERSATIONS.TALK.negative);
+                        result.type = delta >= 0 ? 'speech' : 'negative';
+                    }
+                    break;
+
+                case 'TRADE':
+                    if (target) {
+                        const successChance = 40 + agent.getRelationship(target.id);
+                        if (Math.random() * 100 < successChance) {
+                            const amount = Math.floor(Math.random() * 3) + 1;
+                            agent.bits += amount;
+                            target.bits = Math.max(0, target.bits - amount);
+                            agent.updateRelationship(target.id, 5);
+                            target.updateRelationship(agent.id, 5);
+                            agent.improveSkill('negotiation', 2);
+                            result.text = `${agent.name} traded with ${target.name} (+${amount} bits)!`;
+                            result.speech = pickRandom(CONVERSATIONS.TRADE.success);
+                            result.type = 'speech';
+                        } else {
+                            result.text = `${agent.name}'s trade with ${target.name} fell through.`;
+                            result.speech = pickRandom(CONVERSATIONS.TRADE.fail);
+                        }
+                    }
+                    break;
+
+                case 'GOSSIP':
+                    if (target && others.length > 1) {
+                        const subjects = others.filter(o => o.id !== target.id);
+                        if (subjects.length > 0) {
+                            const subject = pickRandom(subjects);
+                            agent.improveSkill('diplomacy');
+                            agent.updateRelationship(target.id, 3);
+                            result.text = `${agent.name} gossiped with ${target.name} about ${subject.name}.`;
+                            result.speech = pickRandom(CONVERSATIONS.GOSSIP).replace('{target}', subject.name);
+                            result.type = 'speech';
+                        }
+                    }
+                    break;
+
+                case 'STEAL':
+                    if (target) {
+                        let successChance = 25;
+                        if (agent.traits.includes('Cunning')) successChance += 20;
+                        if (agent.traits.includes('Aggressive')) successChance += 10;
+                        successChance += agent.skills.stealth / 5;
+
+                        if (Math.random() * 100 < successChance) {
+                            const stolen = Math.min(target.bits, Math.floor(Math.random() * 4) + 1);
+                            agent.bits += stolen;
+                            target.bits -= stolen;
+                            target.updateRelationship(agent.id, -30);
+                            agent.improveSkill('stealth', 3);
+                            result.text = `${agent.name} stole ${stolen} bits from ${target.name}!`;
+                            result.speech = pickRandom(CONVERSATIONS.STEAL.success);
+                            result.type = 'negative';
+                        } else {
+                            agent.updateRelationship(target.id, -10);
+                            target.updateRelationship(agent.id, -25);
+                            agent.improveSkill('stealth');
+                            result.text = `${agent.name} tried to steal from ${target.name} but got CAUGHT!`;
+                            result.speech = pickRandom(CONVERSATIONS.STEAL.fail);
+                            result.type = 'negative';
+                        }
+                    }
+                    break;
+
+                case 'ALLY':
+                    if (target && agent.getRelationship(target.id) > 20) {
+                        agent.updateRelationship(target.id, 30);
+                        target.updateRelationship(agent.id, 30);
+                        agent.improveSkill('diplomacy', 2);
+                        result.text = `${agent.name} formed an ALLIANCE with ${target.name}!`;
+                        result.speech = pickRandom(CONVERSATIONS.ALLY);
+                        result.type = 'speech';
+                    } else if (target) {
+                        result.text = `${target.name} rejected ${agent.name}'s alliance proposal.`;
+                    }
+                    break;
+
+                case 'BETRAY':
+                    if (target && agent.getRelationship(target.id) > 0) {
+                        const stolen = Math.min(target.bits, Math.floor(Math.random() * 5) + 3);
+                        agent.bits += stolen;
+                        target.bits -= stolen;
+                        agent.influence -= 3;
+                        agent.updateRelationship(target.id, -60);
+                        target.updateRelationship(agent.id, -80);
+                        result.text = `${agent.name} BETRAYED ${target.name}! Stole ${stolen} bits!`;
+                        result.speech = pickRandom(CONVERSATIONS.BETRAY);
+                        result.type = 'negative';
+                    }
+                    break;
+
+                case 'COUNCIL':
+                    const allies = others.filter(o => agent.getRelationship(o.id) > 30);
+                    if (allies.length >= 1) {
+                        const influenceGain = 2 + allies.length;
+                        agent.influence += influenceGain;
+                        allies.forEach(a => a.influence += Math.floor(influenceGain / 2));
+                        agent.improveSkill('leadership', 2);
+                        result.text = `${agent.name} held a COUNCIL with ${allies.map(a => a.name).join(', ')}! (+${influenceGain} influence)`;
+                        result.type = 'speech';
+                    }
+                    break;
+
+                case 'REVIVE':
+                    if (target && target.isDormant) {
+                        agent.bits -= 5;
+                        agent.energy -= 3;
+                        target.isDormant = false;
+                        target.energy = 5;
+                        target.bits = 0;
+                        agent.updateRelationship(target.id, 20);
+                        target.updateRelationship(agent.id, 30);
+                        agent.improveSkill('survival', 2);
+                        result.text = `${agent.name} REVIVED ${target.name} from dormancy!`;
+                        result.speech = pickRandom(CONVERSATIONS.REVIVE);
+                        result.type = 'speech';
+                    }
+                    break;
+            }
+
+            return result;
+        }
+
+        function runTick() {
+            simulation.tickCount++;
+            
+            // Check for world events
+            triggerWorldEvent();
+
+            const active = getActiveAgents();
+            if (active.length === 0) {
+                addChatMessage('event', 'System', 'All agents are dormant! Consider resetting.');
+                stopAutoRun();
+                return;
+            }
+
+            // Shuffle for random order
+            active.sort(() => Math.random() - 0.5);
+
+            active.forEach(agent => {
+                // Check dormancy
+                if (agent.energy <= 0) {
+                    agent.isDormant = true;
+                    addChatMessage('negative', agent.name, `has gone DORMANT! (0 energy)`);
+                    return;
+                }
+
+                const others = getAgentsAtLocation(agent.location).filter(a => a.id !== agent.id);
+                const decision = decideAction(agent, others);
+                const result = executeAction(agent, decision.action, decision.target, others);
+
+                if (result.text) {
+                    addChatMessage(result.type, agent.name, result.text, result.speech);
+                }
+
+                // Energy decay
+                agent.energy = Math.max(0, agent.energy - 1);
+            });
+
+            updateUI();
+        }
+
+        // ============== UI UPDATES ==============
+        function addChatMessage(type, sender, text, speech = null) {
+            const chatLog = document.getElementById('chat-log');
+            const time = new Date().toLocaleTimeString();
+            
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${type}`;
+            msg.innerHTML = `
+                <div class="chat-sender">
+                    <span>${getSenderEmoji(sender)}</span> ${sender}
+                    <span class="chat-time">${time}</span>
+                </div>
+                <div class="chat-text">${text}</div>
+                ${speech ? `<div class="chat-speech">"${speech}"</div>` : ''}
+            `;
+            
+            chatLog.insertBefore(msg, chatLog.firstChild);
+            
+            // Limit messages
+            while (chatLog.children.length > 50) {
+                chatLog.removeChild(chatLog.lastChild);
+            }
+        }
+
+        function getSenderEmoji(name) {
+            const agent = Object.values(simulation.agents).find(a => a.name === name);
+            if (agent) return agent.emoji;
+            if (name === 'World Event' || name === 'System') return '&#127758;';
+            return '&#128101;';
+        }
+
+        function updateUI() {
+            updateStatsBar();
+            updateAgentList();
+            updateWorldMap();
+        }
+
+        function updateStatsBar() {
+            const active = getActiveAgents();
+            const dormant = Object.values(simulation.agents).filter(a => a.isDormant);
+            const totalBits = Object.values(simulation.agents).reduce((sum, a) => sum + a.bits, 0);
+
+            document.getElementById('tick-count').textContent = simulation.tickCount;
+            document.getElementById('active-count').textContent = active.length;
+            document.getElementById('dormant-count').textContent = dormant.length;
+            document.getElementById('total-bits').textContent = totalBits;
+            document.getElementById('event-count').textContent = simulation.eventHistory.length;
+        }
+
+        function updateAgentList() {
+            const container = document.getElementById('agent-list');
+            const sorted = Object.values(simulation.agents).sort((a, b) => b.bits - a.bits);
+
+            container.innerHTML = sorted.map(agent => {
+                const topSkill = agent.getTopSkill();
+                return `
+                    <div class="agent-item ${agent.isDormant ? 'dormant' : ''}">
+                        <div class="agent-avatar agent-token ${agent.name.toLowerCase()}">${agent.emoji}</div>
+                        <div class="agent-info">
+                            <div class="agent-name">${agent.name} ${agent.isDormant ? '(Dormant)' : ''}</div>
+                            <div class="agent-drive">${agent.drive}</div>
+                            ${topSkill.value > 0 ? `<div class="skill-bar"><div class="skill-fill" style="width: ${topSkill.value}%"></div></div>` : ''}
+                        </div>
+                        <div class="agent-stats">
+                            <span class="stat stat-energy">&#9889; ${agent.energy}</span>
+                            <span class="stat stat-bits">&#128176; ${agent.bits}</span>
+                            <span class="stat stat-influence">&#11088; ${agent.influence}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateWorldMap() {
+            document.querySelectorAll('.location').forEach(loc => {
+                const locationName = loc.dataset.location;
+                const agentsHere = Object.values(simulation.agents).filter(a => a.location === locationName);
+                const container = loc.querySelector('.location-agents');
+
+                container.innerHTML = agentsHere.map(agent => `
+                    <div class="agent-token ${agent.name.toLowerCase()} ${agent.isDormant ? 'dormant' : ''}" title="${agent.name}">
+                        ${agent.emoji}
+                        <div class="agent-tooltip">
+                            <strong>${agent.name}</strong><br>
+                            Energy: ${agent.energy}<br>
+                            Bits: ${agent.bits}<br>
+                            ${agent.isDormant ? '<span style="color:#ef4444">DORMANT</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        // ============== CONTROLS ==============
+        function startAutoRun() {
+            if (simulation.isRunning) return;
+            simulation.isRunning = true;
+            
+            const speed = parseInt(document.getElementById('speed-select').value);
+            simulation.intervalId = setInterval(runTick, speed);
+            
+            document.getElementById('btn-auto').style.display = 'none';
+            document.getElementById('btn-stop').style.display = 'inline-flex';
+            document.getElementById('btn-auto').classList.add('active');
+        }
+
+        function stopAutoRun() {
+            simulation.isRunning = false;
+            if (simulation.intervalId) {
+                clearInterval(simulation.intervalId);
+                simulation.intervalId = null;
+            }
+            
+            document.getElementById('btn-auto').style.display = 'inline-flex';
+            document.getElementById('btn-stop').style.display = 'none';
+            document.getElementById('btn-auto').classList.remove('active');
+        }
+
+        function resetSimulation() {
+            stopAutoRun();
+            initializeAgents();
+            document.getElementById('chat-log').innerHTML = `
+                <div class="chat-message event">
+                    <div class="chat-sender">
+                        <span>&#127758;</span> System
+                        <span class="chat-time">Now</span>
+                    </div>
+                    <div class="chat-text">Simulation reset! All agents initialized. Click "Run Tick" to begin.</div>
+                </div>
+            `;
+            updateUI();
+        }
+
+        // ============== INITIALIZATION ==============
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            initializeAgents();
+            updateUI();
+
+            document.getElementById('btn-tick').addEventListener('click', runTick);
+            document.getElementById('btn-auto').addEventListener('click', startAutoRun);
+            document.getElementById('btn-stop').addEventListener('click', stopAutoRun);
+            document.getElementById('btn-reset').addEventListener('click', resetSimulation);
+            
+            document.getElementById('speed-select').addEventListener('change', () => {
+                if (simulation.isRunning) {
+                    stopAutoRun();
+                    startAutoRun();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

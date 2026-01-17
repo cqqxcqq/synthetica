@@ -1,0 +1,1916 @@
+"""
+SYNTHETICA ECOSYSTEM - Enhanced Edition v2.0
+A living world of autonomous AI agents with:
+
+Dynamic world events
+Skills & reputation systems
+Multiple resource types & economy
+Factions & political intrigue
+Quests & achievements
+Rich conversation generation
+Advanced analytics & UI
+Run with: python run.py
+"""
+
+import os
+import sys
+import json
+import random
+import time
+import uuid
+import math
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple, Any
+from collections import defaultdict
+from enum import Enum
+from dataclasses import dataclass, field, asdict
+
+============== STARTUP ==============
+print("=" * 70)
+print("🌐 THE SYNTHETICA ECOSYSTEM - Enhanced Edition v2.0")
+print("=" * 70)
+
+Load environment
+try:
+from dotenv import load_dotenv
+load_dotenv()
+except ImportError:
+pass
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+
+if not GROQ_API_KEY:
+print("\n❌ ERROR: No GROQ_API_KEY found!")
+print("Create a .env file with: GROQ_API_KEY=gsk_your_key_here")
+sys.exit(1)
+
+print(f"✓ API Key loaded")
+
+Import Groq
+try:
+from groq import Groq
+client = Groq(api_key=GROQ_API_KEY)
+print("✓ Groq client ready")
+except Exception as e:
+print(f"❌ Groq error: {e}")
+sys.exit(1)
+
+============== ENUMS & CONSTANTS ==============
+class EventType(Enum):
+GLOBAL = "global"
+LOCAL = "local"
+AGENT = "agent"
+ECONOMIC = "economic"
+SOCIAL = "social"
+
+class ResourceType(Enum):
+BITS = "bits"
+KNOWLEDGE = "knowledge"
+ARTIFACTS = "artifacts"
+FAVOR = "favor"
+
+class Season(Enum):
+DAWN = "Dawn" # New beginnings, +energy regen
+ZENITH = "Zenith" # Peak activity, +trade success
+DUSK = "Dusk" # Intrigue, +stealth actions
+VOID = "Void" # Uncertainty, random effects
+
+Configuration
+MODEL_NAME = "meta-llama/llama-4-scout-17b-16e-instruct"
+DATA_FILE = "synthetica_data.json"
+HISTORY_FILE = "synthetica_history.json"
+
+Locations with properties
+LOCATIONS = {
+"The Archive": {
+"description": "A vast repository of ancient and forbidden knowledge",
+"resource_bonus": ResourceType.KNOWLEDGE,
+"energy_modifier": -1, # Studying is tiring
+"skills_boost": ["Research", "Lore"],
+"danger_level": 1
+},
+"The Market": {
+"description": "A bustling hub of commerce and gossip",
+"resource_bonus": ResourceType.BITS,
+"energy_modifier": 0,
+"skills_boost": ["Trading", "Persuasion"],
+"danger_level": 2
+},
+"The Void": {
+"description": "A mysterious realm between realities",
+"resource_bonus": ResourceType.ARTIFACTS,
+"energy_modifier": -2,
+"skills_boost": ["Stealth", "Mysticism"],
+"danger_level": 4
+},
+"The Nexus": {
+"description": "The central crossroads where all paths meet",
+"resource_bonus": ResourceType.FAVOR,
+"energy_modifier": 1, # Safe and restful
+"skills_boost": ["Diplomacy", "Leadership"],
+"danger_level": 1
+},
+"The Garden": {
+"description": "A tranquil sanctuary of growth and healing",
+"resource_bonus": None,
+"energy_modifier": 2, # Very restful
+"skills_boost": ["Healing", "Nature"],
+"danger_level": 0
+},
+"The Undercroft": {
+"description": "Dark tunnels where secrets and outlaws hide",
+"resource_bonus": ResourceType.ARTIFACTS,
+"energy_modifier": -1,
+"skills_boost": ["Stealth", "Deception"],
+"danger_level": 5
+}
+}
+
+MOVEMENT_COSTS = {
+("The Archive", "The Market"): 2, ("The Market", "The Archive"): 2,
+("The Archive", "The Void"): 3, ("The Void", "The Archive"): 3,
+("The Market", "The Void"): 2, ("The Void", "The Market"): 2,
+("The Nexus", "The Archive"): 1, ("The Archive", "The Nexus"): 1,
+("The Nexus", "The Market"): 1, ("The Market", "The Nexus"): 1,
+("The Nexus", "The Void"): 2, ("The Void", "The Nexus"): 2,
+("The Garden", "The Nexus"): 1, ("The Nexus", "The Garden"): 1,
+("The Garden", "The Archive"): 2, ("The Archive", "The Garden"): 2,
+("The Garden", "The Market"): 2, ("The Market", "The Garden"): 2,
+("The Garden", "The Void"): 3, ("The Void", "The Garden"): 3,
+("The Undercroft", "The Market"): 2, ("The Market", "The Undercroft"): 2,
+("The Undercroft", "The Void"): 1, ("The Void", "The Undercroft"): 1,
+("The Undercroft", "The Nexus"): 3, ("The Nexus", "The Undercroft"): 3,
+("The Undercroft", "The Archive"): 3, ("The Archive", "The Undercroft"): 3,
+("The Undercroft", "The Garden"): 4, ("The Garden", "The Undercroft"): 4,
+}
+
+Skills that agents can learn
+SKILLS = {
+"Trading": {"description": "Better trade outcomes", "max_level": 5},
+"Stealth": {"description": "Better at stealing and avoiding detection", "max_level": 5},
+"Persuasion": {"description": "Influence others more effectively", "max_level": 5},
+"Research": {"description": "Gain more knowledge from studying", "max_level": 5},
+"Leadership": {"description": "Better at forming and leading factions", "max_level": 5},
+"Diplomacy": {"description": "Improve relationships faster", "max_level": 5},
+"Deception": {"description": "Lie and scheme more effectively", "max_level": 5},
+"Mysticism": {"description": "Interact with the Void safely", "max_level": 5},
+"Healing": {"description": "Recover and help others recover energy", "max_level": 5},
+"Lore": {"description": "Understand ancient secrets and events", "max_level": 5},
+"Nature": {"description": "Thrive in the Garden, sense danger", "max_level": 5},
+"Combat": {"description": "Better at challenges and defense", "max_level": 5},
+}
+
+CORE_DRIVES = [
+"Hoard Wealth", "Seek Knowledge", "Spread Chaos", "Build Alliances",
+"Dominate Others", "Survive at All Costs", "Seek Balance", "Collect Secrets",
+"Protect the Weak", "Achieve Immortality", "Find Truth", "Gain Power"
+]
+
+PERSONALITY_TRAITS = [
+"Suspicious", "Generous", "Cunning", "Naive", "Aggressive", "Peaceful",
+"Curious", "Cautious", "Manipulative", "Honest", "Greedy", "Altruistic",
+"Paranoid", "Charismatic", "Reckless", "Patient", "Vengeful", "Forgiving"
+]
+
+World events that can occur
+WORLD_EVENTS = [
+{
+"name": "Market Boom",
+"type": EventType.ECONOMIC,
+"description": "Trade flourishes! All trades this tick are more profitable.",
+"effects": {"trade_bonus": 2},
+"locations": ["The Market"],
+"duration": 3
+},
+{
+"name": "Market Crash",
+"type": EventType.ECONOMIC,
+"description": "Economic downturn! Bits lose value temporarily.",
+"effects": {"trade_penalty": 2},
+"locations": ["The Market"],
+"duration": 2
+},
+{
+"name": "Knowledge Revelation",
+"type": EventType.LOCAL,
+"description": "Ancient texts surface in the Archive!",
+"effects": {"knowledge_bonus": 3},
+"locations": ["The Archive"],
+"duration": 2
+},
+{
+"name": "Void Storm",
+"type": EventType.LOCAL,
+"description": "Reality warps in the Void! Extra danger but rare artifacts.",
+"effects": {"danger_increase": 3, "artifact_chance": 0.3},
+"locations": ["The Void"],
+"duration": 2
+},
+{
+"name": "Festival of Unity",
+"type": EventType.SOCIAL,
+"description": "A celebration at the Nexus! Relationships improve.",
+"effects": {"relationship_bonus": 5},
+"locations": ["The Nexus"],
+"duration": 1
+},
+{
+"name": "Garden Bloom",
+"type": EventType.LOCAL,
+"description": "The Garden overflows with healing energy!",
+"effects": {"energy_bonus": 5},
+"locations": ["The Garden"],
+"duration": 2
+},
+{
+"name": "Shadow Gathering",
+"type": EventType.SOCIAL,
+"description": "Mysterious figures congregate in the Undercroft...",
+"effects": {"secret_events": True},
+"locations": ["The Undercroft"],
+"duration": 2
+},
+{
+"name": "Eclipse",
+"type": EventType.GLOBAL,
+"description": "An eclipse darkens all locations. Stealth actions enhanced.",
+"effects": {"stealth_bonus": 3},
+"locations": list(LOCATIONS.keys()),
+"duration": 1
+},
+{
+"name": "Energy Surge",
+"type": EventType.GLOBAL,
+"description": "A wave of energy sweeps through! All agents gain energy.",
+"effects": {"energy_all": 3},
+"locations": list(LOCATIONS.keys()),
+"duration": 1
+},
+{
+"name": "Suspicion Wave",
+"type": EventType.SOCIAL,
+"description": "Paranoia spreads! Trust is harder to build.",
+"effects": {"trust_penalty": 3},
+"locations": list(LOCATIONS.keys()),
+"duration": 2
+}
+]
+
+Quest templates
+QUEST_TEMPLATES = [
+{
+"name": "The Collector",
+"description": "Accumulate {amount} bits",
+"type": "resource",
+"resource": "bits",
+"amount": 15,
+"reward": {"knowledge": 3, "influence": 5}
+},
+{
+"name": "The Scholar",
+"description": "Gain {amount} knowledge tokens",
+"type": "resource",
+"resource": "knowledge",
+"amount": 5,
+"reward": {"bits": 10, "skill_points": 1}
+},
+{
+"name": "The Diplomat",
+"description": "Form {amount} positive relationships",
+"type": "relationships",
+"amount": 3,
+"reward": {"favor": 5, "influence": 10}
+},
+{
+"name": "The Explorer",
+"description": "Visit all {amount} locations",
+"type": "exploration",
+"amount": len(LOCATIONS),
+"reward": {"artifacts": 2, "energy": 10}
+},
+{
+"name": "The Faction Builder",
+"description": "Lead a faction with {amount} members",
+"type": "faction",
+"amount": 3,
+"reward": {"influence": 20, "bits": 15}
+}
+]
+
+Achievement definitions
+ACHIEVEMENTS = {
+"First Steps": {"description": "Complete your first tick", "condition": "ticks >= 1"},
+"Wealthy": {"description": "Accumulate 20 bits", "condition": "bits >= 20"},
+"Scholar": {"description": "Gain 10 knowledge", "condition": "knowledge >= 10"},
+"Popular": {"description": "Have 3 positive relationships", "condition": "positive_relationships >= 3"},
+"Betrayer": {"description": "Betray an ally", "condition": "betrayals >= 1"},
+"Master Thief": {"description": "Successfully steal 5 times", "condition": "successful_steals >= 5"},
+"Peacemaker": {"description": "Form 3 alliances", "condition": "alliances_formed >= 3"},
+"Survivor": {"description": "Survive 50 ticks", "condition": "ticks_survived >= 50"},
+"Faction Leader": {"description": "Lead a faction", "condition": "is_faction_leader"},
+"World Traveler": {"description": "Visit all locations", "condition": "locations_visited >= 6"},
+"Skill Master": {"description": "Max out any skill", "condition": "max_skill >= 5"},
+"Legend": {"description": "Reach 50 influence", "condition": "influence >= 50"},
+}
+
+============== DATA CLASSES ==============
+@dataclass
+class Resources:
+bits: int = 5
+knowledge: int = 0
+artifacts: int = 0
+favor: int = 0
+
+text
+
+def to_dict(self) -> Dict:
+    return asdict(self)
+
+@classmethod
+def from_dict(cls, data: Dict) -> 'Resources':
+    return cls(**{k: v for k, v in data.items() if k in ['bits', 'knowledge', 'artifacts', 'favor']})
+
+def get(self, resource_type: str) -> int:
+    return getattr(self, resource_type, 0)
+
+def add(self, resource_type: str, amount: int):
+    current = getattr(self, resource_type, 0)
+    setattr(self, resource_type, max(0, current + amount))
+
+def can_afford(self, resource_type: str, amount: int) -> bool:
+    return self.get(resource_type) >= amount
+@dataclass
+class Quest:
+id: str
+name: str
+description: str
+quest_type: str
+target_amount: int
+current_progress: int = 0
+completed: bool = False
+reward: Dict = field(default_factory=dict)
+
+text
+
+def to_dict(self) -> Dict:
+    return asdict(self)
+
+@classmethod
+def from_dict(cls, data: Dict) -> 'Quest':
+    return cls(
+        id=data.get("id", str(uuid.uuid4())[:8]),
+        name=data["name"],
+        description=data["description"],
+        quest_type=data["quest_type"],
+        target_amount=data["target_amount"],
+        current_progress=data.get("current_progress", 0),
+        completed=data.get("completed", False),
+        reward=data.get("reward", {})
+    )
+
+def update_progress(self, amount: int) -> bool:
+    """Update progress and return True if just completed"""
+    if self.completed:
+        return False
+    self.current_progress = min(self.current_progress + amount, self.target_amount)
+    if self.current_progress >= self.target_amount:
+        self.completed = True
+        return True
+    return False
+@dataclass
+class Faction:
+id: str
+name: str
+leader_id: str
+members: List[str] = field(default_factory=list)
+treasury: Dict = field(default_factory=lambda: {"bits": 0, "influence": 0})
+reputation: int = 0
+motto: str = ""
+founded_tick: int = 0
+
+text
+
+def to_dict(self) -> Dict:
+    return asdict(self)
+
+@classmethod
+def from_dict(cls, data: Dict) -> 'Faction':
+    return cls(**data)
+
+def add_member(self, agent_id: str):
+    if agent_id not in self.members:
+        self.members.append(agent_id)
+
+def remove_member(self, agent_id: str):
+    if agent_id in self.members:
+        self.members.remove(agent_id)
+@dataclass
+class ActiveEvent:
+event: Dict
+remaining_ticks: int
+affected_locations: List[str]
+
+text
+
+def to_dict(self) -> Dict:
+    return {
+        "event": self.event,
+        "remaining_ticks": self.remaining_ticks,
+        "affected_locations": self.affected_locations
+    }
+
+@classmethod
+def from_dict(cls, data: Dict) -> 'ActiveEvent':
+    return cls(
+        event=data["event"],
+        remaining_ticks=data["remaining_ticks"],
+        affected_locations=data["affected_locations"]
+    )
+============== AGENT CLASS ==============
+class Agent:
+def init(
+self,
+name: str,
+core_drive: str,
+personality_traits: List[str],
+agent_id: str = None,
+location: str = None,
+energy: int = 15,
+max_energy: int = 20,
+resources: Resources = None,
+influence: int = 0,
+is_dormant: bool = False,
+relationships: Dict[str, int] = None,
+public_reputation: Dict[str, int] = None,
+memories: List[Dict] = None,
+skills: Dict[str, int] = None,
+skill_experience: Dict[str, int] = None,
+faction_id: Optional[str] = None,
+quests: List[Quest] = None,
+achievements: List[str] = None,
+stats: Dict[str, int] = None,
+locations_visited: List[str] = None,
+created_tick: int = 0,
+thoughts: List[str] = None
+):
+self.id = agent_id or str(uuid.uuid4())[:8]
+self.name = name
+self.core_drive = core_drive
+self.personality_traits = personality_traits
+self.location = location or random.choice(list(LOCATIONS.keys()))
+self.energy = energy
+self.max_energy = max_energy
+self.resources = resources or Resources()
+self.influence = influence
+self.is_dormant = is_dormant
+self.relationships = relationships or {}
+self.public_reputation = public_reputation or {}
+self.memories = memories or []
+self.skills = skills or {skill: 0 for skill in SKILLS}
+self.skill_experience = skill_experience or {skill: 0 for skill in SKILLS}
+self.faction_id = faction_id
+self.quests = quests or []
+self.achievements = achievements or []
+self.stats = stats or {
+"ticks_survived": 0,
+"successful_trades": 0,
+"successful_steals": 0,
+"failed_steals": 0,
+"alliances_formed": 0,
+"betrayals": 0,
+"conversations": 0,
+"bits_earned": 0,
+"bits_spent": 0,
+"damage_dealt": 0,
+"damage_received": 0
+}
+self.locations_visited = locations_visited or [self.location]
+self.created_tick = created_tick
+self.thoughts = thoughts or []
+
+text
+
+def to_dict(self) -> Dict:
+    return {
+        "id": self.id,
+        "name": self.name,
+        "core_drive": self.core_drive,
+        "personality_traits": self.personality_traits,
+        "location": self.location,
+        "energy": self.energy,
+        "max_energy": self.max_energy,
+        "resources": self.resources.to_dict(),
+        "influence": self.influence,
+        "is_dormant": self.is_dormant,
+        "relationships": self.relationships,
+        "public_reputation": self.public_reputation,
+        "memories": self.memories,
+        "skills": self.skills,
+        "skill_experience": self.skill_experience,
+        "faction_id": self.faction_id,
+        "quests": [q.to_dict() if isinstance(q, Quest) else q for q in self.quests],
+        "achievements": self.achievements,
+        "stats": self.stats,
+        "locations_visited": self.locations_visited,
+        "created_tick": self.created_tick,
+        "thoughts": self.thoughts
+    }
+
+@classmethod
+def from_dict(cls, data: Dict) -> 'Agent':
+    resources = Resources.from_dict(data.get("resources", {})) if isinstance(data.get("resources"), dict) else Resources()
+    quests = [Quest.from_dict(q) if isinstance(q, dict) else q for q in data.get("quests", [])]
+    
+    return cls(
+        agent_id=data.get("id"),
+        name=data["name"],
+        core_drive=data["core_drive"],
+        personality_traits=data["personality_traits"],
+        location=data.get("location"),
+        energy=data.get("energy", 15),
+        max_energy=data.get("max_energy", 20),
+        resources=resources,
+        influence=data.get("influence", 0),
+        is_dormant=data.get("is_dormant", False),
+        relationships=data.get("relationships", {}),
+        public_reputation=data.get("public_reputation", {}),
+        memories=data.get("memories", []),
+        skills=data.get("skills", {skill: 0 for skill in SKILLS}),
+        skill_experience=data.get("skill_experience", {skill: 0 for skill in SKILLS}),
+        faction_id=data.get("faction_id"),
+        quests=quests,
+        achievements=data.get("achievements", []),
+        stats=data.get("stats", {}),
+        locations_visited=data.get("locations_visited", []),
+        created_tick=data.get("created_tick", 0),
+        thoughts=data.get("thoughts", [])
+    )
+
+def add_memory(self, memory: str, importance: int = 1):
+    """Add a memory with timestamp and importance"""
+    self.memories.append({
+        "text": memory,
+        "time": datetime.now().isoformat(),
+        "importance": importance,
+        "tick": self.stats.get("ticks_survived", 0)
+    })
+    # Keep important memories longer, prune old unimportant ones
+    if len(self.memories) > 30:
+        # Sort by importance, keep top 25
+        self.memories.sort(key=lambda m: m.get("importance", 1), reverse=True)
+        self.memories = self.memories[:25]
+        # Re-sort by time
+        self.memories.sort(key=lambda m: m.get("time", ""))
+
+def get_recent_memories(self, n: int = 5) -> List[str]:
+    return [m["text"] for m in self.memories[-n:]]
+
+def get_important_memories(self, n: int = 3) -> List[str]:
+    sorted_mems = sorted(self.memories, key=lambda m: m.get("importance", 1), reverse=True)
+    return [m["text"] for m in sorted_mems[:n]]
+
+def add_thought(self, thought: str):
+    """Internal monologue"""
+    self.thoughts.append(thought)
+    self.thoughts = self.thoughts[-10:]  # Keep last 10 thoughts
+
+def update_relationship(self, other_id: str, delta: int):
+    current = self.relationships.get(other_id, 0)
+    self.relationships[other_id] = max(-100, min(100, current + delta))
+
+def update_public_reputation(self, other_id: str, delta: int):
+    current = self.public_reputation.get(other_id, 0)
+    self.public_reputation[other_id] = max(-100, min(100, current + delta))
+
+def get_relationship(self, other_id: str) -> int:
+    return self.relationships.get(other_id, 0)
+
+def get_public_reputation(self, other_id: str) -> int:
+    return self.public_reputation.get(other_id, 0)
+
+def gain_skill_exp(self, skill: str, amount: int):
+    """Gain experience in a skill, potentially leveling up"""
+    if skill not in SKILLS:
+        return
+    
+    current_level = self.skills.get(skill, 0)
+    max_level = SKILLS[skill]["max_level"]
+    
+    if current_level >= max_level:
+        return
+    
+    self.skill_experience[skill] = self.skill_experience.get(skill, 0) + amount
+    
+    # Level up requires (current_level + 1) * 10 exp
+    required_exp = (current_level + 1) * 10
+    while self.skill_experience[skill] >= required_exp and self.skills[skill] < max_level:
+        self.skill_experience[skill] -= required_exp
+        self.skills[skill] += 1
+        self.add_memory(f"I improved my {skill} skill to level {self.skills[skill]}!", importance=3)
+
+def get_skill_level(self, skill: str) -> int:
+    return self.skills.get(skill, 0)
+
+def visit_location(self, location: str):
+    if location not in self.locations_visited:
+        self.locations_visited.append(location)
+
+def check_achievements(self) -> List[str]:
+    """Check and return newly earned achievements"""
+    new_achievements = []
+    
+    for ach_name, ach_data in ACHIEVEMENTS.items():
+        if ach_name in self.achievements:
+            continue
+        
+        condition = ach_data["condition"]
+        earned = False
+        
+        # Parse simple conditions
+        if ">=" in condition:
+            stat, value = condition.split(" >= ")
+            value = int(value)
+            if stat == "bits":
+                earned = self.resources.bits >= value
+            elif stat == "knowledge":
+                earned = self.resources.knowledge >= value
+            elif stat == "influence":
+                earned = self.influence >= value
+            elif stat == "positive_relationships":
+                earned = sum(1 for v in self.relationships.values() if v > 20) >= value
+            elif stat == "locations_visited":
+                earned = len(self.locations_visited) >= value
+            elif stat == "max_skill":
+                earned = max(self.skills.values(), default=0) >= value
+            elif stat in self.stats:
+                earned = self.stats.get(stat, 0) >= value
+        elif condition == "is_faction_leader":
+            earned = self.faction_id is not None  # Simplified check
+        
+        if earned:
+            self.achievements.append(ach_name)
+            new_achievements.append(ach_name)
+            self.add_memory(f"I earned the achievement: {ach_name}!", importance=4)
+    
+    return new_achievements
+
+def get_total_power(self) -> int:
+    """Calculate overall power score"""
+    power = 0
+    power += self.resources.bits * 1
+    power += self.resources.knowledge * 2
+    power += self.resources.artifacts * 5
+    power += self.resources.favor * 3
+    power += self.influence * 2
+    power += sum(self.skills.values()) * 3
+    power += len([r for r in self.relationships.values() if r > 30]) * 5
+    return power
+============== CONVERSATION GENERATOR ==============
+class ConversationGenerator:
+"""Generates dynamic conversations between agents"""
+
+text
+
+@staticmethod
+def generate_dialogue(agent1: Agent, agent2: Agent, context: str = "meeting") -> str:
+    """Generate a short dialogue exchange between two agents"""
+    
+    rel = agent1.get_relationship(agent2.id)
+    tone = "neutral"
+    if rel > 40:
+        tone = "friendly"
+    elif rel > 70:
+        tone = "warm and trusting"
+    elif rel < -40:
+        tone = "cold"
+    elif rel < -70:
+        tone = "hostile"
+    
+    prompt = f"""Generate a brief conversation (2-3 exchanges) between two agents:
+AGENT 1: {agent1.name}
+
+Drive: {agent1.core_drive}
+Personality: {', '.join(agent1.personality_traits)}
+AGENT 2: {agent2.name}
+
+Drive: {agent2.core_drive}
+Personality: {', '.join(agent2.personality_traits)}
+Context: They are {context} at {agent1.location}
+Relationship tone: {tone}
+
+Write a natural dialogue. Format:
+{agent1.name}: "dialogue"
+{agent2.name}: "dialogue"
+(continue for 2-3 exchanges)
+
+Keep it brief and in character."""
+
+text
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": "You are a dialogue writer for AI agents. Keep responses brief and natural."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.9,
+            max_tokens=200
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f'{agent1.name}: "Greetings."\n{agent2.name}: "Hello."'
+============== SIMULATION CLASS ==============
+class Simulation:
+def init(self):
+self.agents: Dict[str, Agent] = {}
+self.factions: Dict[str, Faction] = {}
+self.tick_count = 0
+self.logs: List[Dict] = []
+self.active_events: List[ActiveEvent] = []
+self.current_season: Season = Season.DAWN
+self.season_tick_counter = 0
+self.season_duration = 10 # Ticks per season
+self.market_prices: Dict[str, float] = {
+"bits": 1.0,
+"knowledge": 2.0,
+"artifacts": 5.0,
+"favor": 3.0
+}
+self.global_stats = {
+"total_trades": 0,
+"total_betrayals": 0,
+"total_alliances": 0,
+"total_steals": 0,
+"agents_gone_dormant": 0,
+"factions_formed": 0,
+"world_events_occurred": 0
+}
+self.watched_agent_id: Optional[str] = None
+self.conversation_generator = ConversationGenerator()
+self.load_data()
+
+text
+
+def save_data(self):
+    data = {
+        "tick_count": self.tick_count,
+        "agents": {aid: a.to_dict() for aid, a in self.agents.items()},
+        "factions": {fid: f.to_dict() for fid, f in self.factions.items()},
+        "logs": self.logs[-200:],
+        "active_events": [e.to_dict() for e in self.active_events],
+        "current_season": self.current_season.value,
+        "season_tick_counter": self.season_tick_counter,
+        "market_prices": self.market_prices,
+        "global_stats": self.global_stats
+    }
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
+
+def load_data(self):
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, 'r') as f:
+                data = json.load(f)
+            self.tick_count = data.get("tick_count", 0)
+            self.logs = data.get("logs", [])
+            self.season_tick_counter = data.get("season_tick_counter", 0)
+            self.market_prices = data.get("market_prices", self.market_prices)
+            self.global_stats = data.get("global_stats", self.global_stats)
+            
+            # Load season
+            season_val = data.get("current_season", "Dawn")
+            for s in Season:
+                if s.value == season_val:
+                    self.current_season = s
+                    break
+            
+            # Load agents
+            for aid, adata in data.get("agents", {}).items():
+                self.agents[aid] = Agent.from_dict(adata)
+            
+            # Load factions
+            for fid, fdata in data.get("factions", {}).items():
+                self.factions[fid] = Faction.from_dict(fdata)
+            
+            # Load active events
+            for edata in data.get("active_events", []):
+                self.active_events.append(ActiveEvent.from_dict(edata))
+            
+            print(f"✓ Loaded {len(self.agents)} agents, {len(self.factions)} factions from save")
+        except Exception as e:
+            print(f"⚠ Could not load save: {e}")
+            import traceback
+            traceback.print_exc()
+
+def log(self, message: str, log_type: str = "action", agent_id: str = None):
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    entry = {
+        "timestamp": timestamp,
+        "tick": self.tick_count,
+        "message": message,
+        "type": log_type,
+        "agent_id": agent_id
+    }
+    self.logs.append(entry)
+    
+    # Color-code output based on type
+    prefix_map = {
+        "action": "  ",
+        "event": "⚡",
+        "achievement": "🏆",
+        "faction": "🏛️",
+        "combat": "⚔️",
+        "economy": "💰",
+        "social": "💬"
+    }
+    prefix = prefix_map.get(log_type, "  ")
+    print(f"{prefix} [{timestamp}] {message}")
+
+def create_agent(self, name: str, core_drive: str, traits: List[str]) -> Agent:
+    agent = Agent(
+        name=name,
+        core_drive=core_drive,
+        personality_traits=traits,
+        created_tick=self.tick_count
+    )
+    self.agents[agent.id] = agent
+    self.assign_random_quest(agent)
+    self.log(f"🆕 {name} joined the ecosystem at {agent.location}", "event", agent.id)
+    return agent
+
+def initialize_default_agents(self):
+    archetypes = [
+        ("Oracle", "Seek Knowledge", ["Curious", "Cautious", "Honest"]),
+        ("Merchant", "Hoard Wealth", ["Greedy", "Cunning", "Suspicious"]),
+        ("Diplomat", "Build Alliances", ["Generous", "Peaceful", "Charismatic"]),
+        ("Rogue", "Spread Chaos", ["Aggressive", "Cunning", "Reckless"]),
+        ("Guardian", "Seek Balance", ["Cautious", "Altruistic", "Patient"]),
+        ("Shadow", "Collect Secrets", ["Suspicious", "Curious", "Manipulative"]),
+        ("Sage", "Find Truth", ["Honest", "Patient", "Curious"]),
+        ("Warlord", "Dominate Others", ["Aggressive", "Paranoid", "Vengeful"]),
+    ]
+    for name, drive, traits in archetypes:
+        agent = self.create_agent(name, drive, traits)
+        # Give each a starting skill based on personality
+        if "Cunning" in traits:
+            agent.skills["Stealth"] = 1
+        if "Curious" in traits:
+            agent.skills["Research"] = 1
+        if "Generous" in traits or "Peaceful" in traits:
+            agent.skills["Diplomacy"] = 1
+        if "Greedy" in traits:
+            agent.skills["Trading"] = 1
+    
+    print(f"✓ Created {len(archetypes)} agents")
+
+def assign_random_quest(self, agent: Agent):
+    """Assign a random quest to an agent"""
+    if len(agent.quests) >= 3:
+        return  # Max 3 active quests
+    
+    template = random.choice(QUEST_TEMPLATES)
+    quest = Quest(
+        id=str(uuid.uuid4())[:8],
+        name=template["name"],
+        description=template["description"].format(amount=template["amount"]),
+        quest_type=template["type"],
+        target_amount=template["amount"],
+        reward=template["reward"]
+    )
+    agent.quests.append(quest)
+    agent.add_memory(f"I have a new objective: {quest.name} - {quest.description}", importance=2)
+
+def get_agents_at_location(self, location: str) -> List[Agent]:
+    return [a for a in self.agents.values() 
+            if a.location == location and not a.is_dormant]
+
+def get_active_agents(self) -> List[Agent]:
+    return [a for a in self.agents.values() if not a.is_dormant]
+
+def get_faction(self, faction_id: str) -> Optional[Faction]:
+    return self.factions.get(faction_id)
+
+def create_faction(self, name: str, leader: Agent, motto: str = "") -> Faction:
+    faction = Faction(
+        id=str(uuid.uuid4())[:8],
+        name=name,
+        leader_id=leader.id,
+        members=[leader.id],
+        motto=motto,
+        founded_tick=self.tick_count
+    )
+    self.factions[faction.id] = faction
+    leader.faction_id = faction.id
+    self.global_stats["factions_formed"] += 1
+    self.log(f"🏛️ {leader.name} founded faction: {name}", "faction", leader.id)
+    return faction
+
+def update_season(self):
+    """Progress seasons"""
+    self.season_tick_counter += 1
+    if self.season_tick_counter >= self.season_duration:
+        self.season_tick_counter = 0
+        seasons = list(Season)
+        current_idx = seasons.index(self.current_season)
+        self.current_season = seasons[(current_idx + 1) % len(seasons)]
+        self.log(f"🌅 Season changed to {self.current_season.value}", "event")
+
+def update_market(self):
+    """Fluctuate market prices"""
+    for resource in self.market_prices:
+        change = random.uniform(-0.2, 0.2)
+        self.market_prices[resource] = max(0.5, min(3.0, self.market_prices[resource] + change))
+
+def roll_world_event(self) -> Optional[Dict]:
+    """Chance for a world event to occur"""
+    if random.random() < 0.15:  # 15% chance per tick
+        event = random.choice(WORLD_EVENTS)
+        return event
+    return None
+
+def apply_world_event(self, event: Dict):
+    """Apply a world event"""
+    active_event = ActiveEvent(
+        event=event,
+        remaining_ticks=event["duration"],
+        affected_locations=event["locations"]
+    )
+    self.active_events.append(active_event)
+    self.global_stats["world_events_occurred"] += 1
+    
+    loc_text = ", ".join(event["locations"]) if len(event["locations"]) < 4 else "everywhere"
+    self.log(f"🌍 WORLD EVENT: {event['name']} at {loc_text}! {event['description']}", "event")
+    
+    # Apply immediate effects
+    effects = event.get("effects", {})
+    if "energy_all" in effects:
+        for agent in self.get_active_agents():
+            if agent.location in event["locations"]:
+                agent.energy = min(agent.max_energy, agent.energy + effects["energy_all"])
+
+def tick_world_events(self):
+    """Process active world events"""
+    remaining = []
+    for active_event in self.active_events:
+        active_event.remaining_ticks -= 1
+        if active_event.remaining_ticks > 0:
+            remaining.append(active_event)
+        else:
+            self.log(f"🌍 Event ended: {active_event.event['name']}", "event")
+    self.active_events = remaining
+
+def get_location_effects(self, location: str) -> Dict:
+    """Get combined effects at a location from events and properties"""
+    effects = {}
+    
+    # Base location properties
+    loc_data = LOCATIONS.get(location, {})
+    effects["energy_modifier"] = loc_data.get("energy_modifier", 0)
+    effects["danger_level"] = loc_data.get("danger_level", 0)
+    effects["skills_boost"] = loc_data.get("skills_boost", [])
+    effects["resource_bonus"] = loc_data.get("resource_bonus")
+    
+    # Season effects
+    if self.current_season == Season.DAWN:
+        effects["energy_modifier"] += 1
+    elif self.current_season == Season.ZENITH:
+        effects["trade_bonus"] = effects.get("trade_bonus", 0) + 1
+    elif self.current_season == Season.DUSK:
+        effects["stealth_bonus"] = effects.get("stealth_bonus", 0) + 2
+    elif self.current_season == Season.VOID:
+        effects["random_effect"] = True
+    
+    # Active event effects
+    for active_event in self.active_events:
+        if location in active_event.affected_locations:
+            for key, value in active_event.event.get("effects", {}).items():
+                if isinstance(value, (int, float)):
+                    effects[key] = effects.get(key, 0) + value
+                else:
+                    effects[key] = value
+    
+    return effects
+
+def build_prompt(self, agent: Agent, others: List[Agent]) -> str:
+    """Build the decision prompt for an agent"""
+    
+    # Others at location
+    others_text = ""
+    for o in others:
+        rel = agent.get_relationship(o.id)
+        pub_rep = agent.get_public_reputation(o.id)
+        rel_word = "neutral"
+        if rel > 30: rel_word = "friendly"
+        elif rel > 60: rel_word = "allied"
+        elif rel < -30: rel_word = "hostile"
+        elif rel < -60: rel_word = "enemy"
+        
+        faction_info = ""
+        if o.faction_id:
+            faction = self.get_faction(o.faction_id)
+            if faction:
+                same_faction = " (SAME FACTION)" if agent.faction_id == o.faction_id else f" (Faction: {faction.name})"
+                faction_info = same_faction
+        
+        others_text += f"\n  - {o.name}: {rel_word} (trust: {rel}, reputation: {pub_rep}){faction_info}"
+    
+    if not others_text:
+        others_text = "\n  No one else here."
+
+    # Memories
+    recent_mems = "\n  ".join(agent.get_recent_memories(3)) or "No recent memories."
+    important_mems = "\n  ".join(agent.get_important_memories(2)) or "Nothing stands out."
+
+    # Movement options
+    move_options = []
+    for loc in LOCATIONS:
+        if loc != agent.location:
+            cost = MOVEMENT_COSTS.get((agent.location, loc), 4)
+            if agent.energy >= cost:
+                move_options.append(f"{loc} (cost: {cost})")
+
+    # Skills summary
+    notable_skills = [f"{s}: {l}" for s, l in agent.skills.items() if l > 0]
+    skills_text = ", ".join(notable_skills) if notable_skills else "No trained skills"
+
+    # Active quests
+    active_quests = [q for q in agent.quests if not q.completed]
+    quests_text = "\n  ".join([f"• {q.name}: {q.current_progress}/{q.target_amount}" for q in active_quests[:2]]) or "No active quests"
+
+    # Location effects
+    effects = self.get_location_effects(agent.location)
+    effects_text = []
+    if effects.get("trade_bonus", 0) > 0:
+        effects_text.append(f"Trade bonus: +{effects['trade_bonus']}")
+    if effects.get("stealth_bonus", 0) > 0:
+        effects_text.append(f"Stealth bonus: +{effects['stealth_bonus']}")
+    if effects.get("danger_level", 0) > 2:
+        effects_text.append(f"DANGER LEVEL: {effects['danger_level']}")
+    location_effects = ", ".join(effects_text) if effects_text else "Normal conditions"
+
+    # Faction info
+    faction_text = "None"
+    if agent.faction_id:
+        faction = self.get_faction(agent.faction_id)
+        if faction:
+            is_leader = faction.leader_id == agent.id
+            role = "Leader" if is_leader else "Member"
+            faction_text = f"{faction.name} ({role}, {len(faction.members)} members)"
+
+    # World events
+    events_text = ""
+    for ae in self.active_events:
+        if agent.location in ae.affected_locations:
+            events_text += f"\n  ⚡ {ae.event['name']}: {ae.event['description']}"
+    if not events_text:
+        events_text = "\n  No special events."
+
+    prompt = f"""You are {agent.name}, an autonomous agent in the Synthetica Ecosystem.
+YOUR IDENTITY:
+
+Core Drive: {agent.core_drive}
+Personality: {', '.join(agent.personality_traits)}
+Skills: {skills_text}
+Faction: {faction_text}
+CURRENT STATUS:
+
+Location: {agent.location}
+Season: {self.current_season.value}
+Energy: {agent.energy}/{agent.max_energy}
+Bits: {agent.resources.bits} | Knowledge: {agent.resources.knowledge} | Artifacts: {agent.resources.artifacts} | Favor: {agent.resources.favor}
+Influence: {agent.influence}
+Location Effects: {location_effects}
+AGENTS PRESENT:{others_text}
+
+ACTIVE WORLD EVENTS:{events_text}
+
+RECENT MEMORIES:
+{recent_mems}
+
+KEY MEMORIES:
+{important_mems}
+
+CURRENT OBJECTIVES:
+{quests_text}
+
+AVAILABLE ACTIONS:
+
+TALK [name]: Converse (builds relationships, gains info)
+TRADE [name]: Exchange resources
+STEAL [name]: Attempt theft (risky, uses Stealth skill)
+ALLY [name]: Propose alliance (needs positive relationship)
+BETRAY [name]: Betray someone who trusts you (devastating)
+GIFT [name]: Give resources to someone (builds trust)
+CHALLENGE [name]: Direct confrontation (uses Combat skill)
+TEACH [name]: Share skill knowledge
+RECRUIT [name]: Try to recruit to your faction
+SCHEME: Plot in secret (uses Deception, may harm reputation if discovered)
+MOVE [location]: Travel. Options: {', '.join(move_options) if move_options else 'None (low energy)'}
+REST: Recover +4 energy
+STUDY: Gain knowledge (Archive bonus)
+OBSERVE: Watch and gather information
+FORM_FACTION [name]: Create a new faction (costs 10 influence)
+Based on your drive "{agent.core_drive}", personality, and current objectives, decide your action.
+
+Respond in this EXACT JSON format:
+{{"action": "ACTION_NAME", "target": "name_or_location_or_null", "reasoning": "brief explanation", "speech": "what you say aloud or null", "thought": "your private thought"}}
+"""
+return prompt
+
+text
+
+def get_llm_decision(self, agent: Agent, prompt: str) -> Dict:
+    """Get LLM decision for agent"""
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": "You are an autonomous agent making strategic decisions. Always respond with valid JSON only, no extra text. Be creative and stay in character."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.85,
+            max_tokens=350
+        )
+        
+        text = response.choices[0].message.content.strip()
+        
+        # Extract JSON
+        if "```json" in text:
+            text = text.split("```json")[1].split("```")[0]
+        elif "```" in text:
+            text = text.split("```")[1].split("```")[0]
+        
+        start = text.find("{")
+        end = text.rfind("}") + 1
+        if start != -1 and end > start:
+            text = text[start:end]
+        
+        decision = json.loads(text)
+        
+        # Store thought
+        if decision.get("thought"):
+            agent.add_thought(decision["thought"])
+        
+        return decision
+        
+    except json.JSONDecodeError:
+        return {"action": "OBSERVE", "target": None, "reasoning": "Thinking...", "speech": None}
+    except Exception as e:
+        print(f"    ⚠ LLM Error: {e}")
+        return {"action": "REST", "target": None, "reasoning": str(e), "speech": None}
+
+def find_agent_by_name(self, name: str, agents: List[Agent] = None) -> Optional[Agent]:
+    if not name:
+        return None
+    name_lower = name.lower()
+    search_list = agents if agents else list(self.agents.values())
+    for a in search_list:
+        if a.name.lower() == name_lower:
+            return a
+    return None
+
+def execute_action(self, agent: Agent, decision: Dict, others: List[Agent]) -> str:
+    """Execute an agent's decided action"""
+    action = decision.get("action", "REST").upper().replace(" ", "_")
+    target = decision.get("target")
+    speech = decision.get("speech")
+    
+    result = ""
+    effects = self.get_location_effects(agent.location)
+
+    # ===== REST =====
+    if action == "REST":
+        recovery = 4 + effects.get("energy_modifier", 0)
+        if agent.get_skill_level("Healing") > 0:
+            recovery += agent.get_skill_level("Healing")
+        agent.energy = min(agent.max_energy, agent.energy + recovery)
+        result = f"😴 {agent.name} rested (+{recovery} energy, now {agent.energy})"
+        agent.add_memory("I rested and recovered my strength.")
+
+    # ===== OBSERVE =====
+    elif action == "OBSERVE":
+        observations = []
+        for o in others:
+            observations.append(o.name)
+            # Chance to learn about their resources
+            if random.random() < 0.3 + agent.get_skill_level("Research") * 0.1:
+                agent.add_memory(f"I noticed {o.name} has about {o.resources.bits} bits.", importance=1)
+        
+        agent.gain_skill_exp("Research", 2)
+        
+        if observations:
+            result = f"👁 {agent.name} observed: {', '.join(observations)}"
+            agent.add_memory(f"I watched {', '.join(observations)} at {agent.location}")
+        else:
+            result = f"👁 {agent.name} observed the quiet {agent.location}"
+            # Chance to find something when alone
+            if random.random() < 0.2:
+                found_resource = random.choice(["bits", "knowledge"])
+                amount = random.randint(1, 2)
+                agent.resources.add(found_resource, amount)
+                result += f" and found {amount} {found_resource}!"
+                agent.add_memory(f"I found {amount} {found_resource} while exploring {agent.location}!")
+
+    # ===== MOVE =====
+    elif action == "MOVE":
+        if target and target in LOCATIONS and target != agent.location:
+            cost = MOVEMENT_COSTS.get((agent.location, target), 4)
+            if agent.energy >= cost:
+                old_loc = agent.location
+                agent.energy -= cost
+                agent.location = target
+                agent.visit_location(target)
+                result = f"🚶 {agent.name} traveled from {old_loc} to {target} (-{cost} energy)"
+                agent.add_memory(f"I traveled from {old_loc} to {target}.")
+                
+                # Check exploration quest
+                for quest in agent.quests:
+                    if quest.quest_type == "exploration" and not quest.completed:
+                        quest.current_progress = len(agent.locations_visited)
+            else:
+                result = f"😓 {agent.name} is too tired to travel to {target}"
+        else:
+            result = f"❓ {agent.name} tried to move but got confused"
+
+    # ===== TALK =====
+    elif action == "TALK":
+        other = self.find_agent_by_name(target, others)
+        if other:
+            agent.stats["conversations"] += 1
+            
+            # Base relationship change
+            delta = random.randint(-2, 7)
+            if "Generous" in agent.personality_traits: delta += 3
+            if "Suspicious" in agent.personality_traits: delta -= 2
+            if "Honest" in agent.personality_traits: delta += 2
+            if "Charismatic" in agent.personality_traits: delta += 3
+            delta += agent.get_skill_level("Diplomacy")
+            delta += effects.get("relationship_bonus", 0)
+            delta -= effects.get("trust_penalty", 0)
+            
+            agent.update_relationship(other.id, delta)
+            other.update_relationship(agent.id, delta)
+            agent.update_public_reputation(other.id, max(0, delta))
+            other.update_public_reputation(agent.id, max(0, delta))
+            
+            agent.gain_skill_exp("Diplomacy", 3)
+            agent.gain_skill_exp("Persuasion", 2)
+            
+            # Generate dialogue if watched
+            dialogue = ""
+            if self.watched_agent_id in [agent.id, other.id]:
+                dialogue = self.conversation_generator.generate_dialogue(agent, other, "meeting")
+            
+            direction = "improved" if delta > 0 else "worsened" if delta < 0 else "unchanged"
+            speech_text = f' "{speech}"' if speech else ""
+            result = f"💬 {agent.name} talked with {other.name}{speech_text} (relationship {direction}: {delta:+d})"
+            
+            if dialogue and self.watched_agent_id in [agent.id, other.id]:
+                print(f"\n--- Conversation ---\n{dialogue}\n-------------------")
+            
+            agent.add_memory(f"I had a conversation with {other.name}. It went {'well' if delta > 0 else 'poorly' if delta < 0 else 'okay'}.")
+            other.add_memory(f"{agent.name} talked to me.{speech_text}")
+            
+            # Check relationship quest
+            for quest in agent.quests:
+                if quest.quest_type == "relationships" and not quest.completed:
+                    positive_rels = sum(1 for v in agent.relationships.values() if v > 20)
+                    if quest.update_progress(positive_rels - quest.current_progress):
+                        result += f" 🎯 Quest complete: {quest.name}!"
+        else:
+            result = f"❓ {agent.name} tried to talk to {target} but couldn't find them"
+
+    # ===== TRADE =====
+    elif action == "TRADE":
+        other = self.find_agent_by_name(target, others)
+        if other:
+            success_chance = 40 + agent.get_relationship(other.id)
+            success_chance += agent.get_skill_level("Trading") * 8
+            success_chance += effects.get("trade_bonus", 0) * 10
+            success_chance -= effects.get("trade_penalty", 0) * 10
+            
+            if random.randint(0, 100) < success_chance:
+                # Successful trade
+                amount = random.randint(1, 3) + agent.get_skill_level("Trading")
+                agent.resources.bits += amount
+                other.resources.bits = max(0, other.resources.bits - amount // 2)
+                
+                agent.update_relationship(other.id, 5)
+                other.update_relationship(agent.id, 5)
+                agent.stats["successful_trades"] += 1
+                agent.stats["bits_earned"] += amount
+                self.global_stats["total_trades"] += 1
+                
+                agent.gain_skill_exp("Trading", 5)
+                
+                result = f"🤝 {agent.name} traded with {other.name} (+{amount} bits)"
+                agent.add_memory(f"I made a successful trade with {other.name}, gaining {amount} bits.", importance=2)
+                other.add_memory(f"I traded with {agent.name}.")
+                
+                # Check resource quest
+                for quest in agent.quests:
+                    if quest.quest_type == "resource" and quest.resource == "bits" and not quest.completed:
+                        if quest.update_progress(amount):
+                            result += f" 🎯 Quest complete: {quest.name}!"
+            else:
+                result = f"🚫 {agent.name}'s trade with {other.name} fell through"
+                agent.add_memory(f"My trade negotiation with {other.name} failed.")
+        else:
+            result = f"❓ {agent.name} tried to trade with {target} but couldn't find them"
+
+    # ===== STEAL =====
+    elif action == "STEAL":
+        other = self.find_agent_by_name(target, others)
+        if other:
+            success_chance = 20
+            success_chance += agent.get_skill_level("Stealth") * 12
+            success_chance += effects.get("stealth_bonus", 0) * 8
+            if "Cunning" in agent.personality_traits: success_chance += 15
+            if "Reckless" in agent.personality_traits: success_chance += 10
+            success_chance -= other.get_skill_level("Nature") * 5  # Perception
+            
+            if random.randint(0, 100) < success_chance:
+                stolen = min(other.resources.bits, random.randint(2, 5) + agent.get_skill_level("Stealth"))
+                agent.resources.bits += stolen
+                other.resources.bits -= stolen
+                other.update_relationship(agent.id, -40)
+                other.update_public_reputation(agent.id, -30)
+                agent.stats["successful_steals"] += 1
+                agent.stats["bits_earned"] += stolen
+                self.global_stats["total_steals"] += 1
+                
+                agent.gain_skill_exp("Stealth", 8)
+                
+                result = f"🦹 {agent.name} stole {stolen} bits from {other.name}!"
+                agent.add_memory(f"I successfully stole {stolen} bits from {other.name}.", importance=3)
+                other.add_memory(f"{agent.name} STOLE from me! I lost {stolen} bits. Never trust them!", importance=4)
+            else:
+                # Caught!
+                agent.stats["failed_steals"] += 1
+                penalty = random.randint(1, 3)
+                agent.resources.bits = max(0, agent.resources.bits - penalty)
+                
+                agent.update_relationship(other.id, -15)
+                other.update_relationship(agent.id, -35)
+                other.update_public_reputation(agent.id, -40)
+                agent.influence = max(0, agent.influence - 3)
+                
+                result = f"🚨 {agent.name} tried to steal from {other.name} but got CAUGHT! (Lost {penalty} bits, reputation damaged)"
+                agent.add_memory(f"I tried to steal from {other.name} but was caught! Humiliating!", importance=3)
+                other.add_memory(f"{agent.name} tried to steal from me! I caught them!", importance=4)
+        else:
+            result = f"❓ {agent.name} tried to steal but found no target"
+
+    # ===== ALLY =====
+    elif action == "ALLY":
+        other = self.find_agent_by_name(target, others)
+        if other:
+            relationship = agent.get_relationship(other.id)
+            if relationship > 25:
+                agent.update_relationship(other.id, 25)
+                other.update_relationship(agent.id, 25)
+                agent.update_public_reputation(other.id, 15)
+                other.update_public_reputation(agent.id, 15)
+                agent.stats["alliances_formed"] += 1
+                self.global_stats["total_alliances"] += 1
+                
+                agent.gain_skill_exp("Diplomacy", 10)
+                agent.gain_skill_exp("Leadership", 5)
+                
+                result = f"🤜🤛 {agent.name} formed an ALLIANCE with {other.name}!"
+                agent.add_memory(f"I formed a powerful alliance with {other.name}!", importance=4)
+                other.add_memory(f"{agent.name} and I are now allies!", importance=4)
+            else:
+                result = f"🙅 {other.name} rejected {agent.name}'s alliance proposal (trust too low)"
+                agent.add_memory(f"I proposed an alliance to {other.name} but was rejected.")
+        else:
+            result = f"❓ {agent.name} tried to ally with {target} but couldn't find them"
+
+    # ===== BETRAY =====
+    elif action == "BETRAY":
+        other = self.find_agent_by_name(target, others)
+        if other and agent.get_relationship(other.id) > 10:
+            stolen = min(other.resources.bits, random.randint(4, 8))
+            knowledge_stolen = min(other.resources.knowledge, random.randint(1, 3))
+            
+            agent.resources.bits += stolen
+            agent.resources.knowledge += knowledge_stolen
+            other.resources.bits -= stolen
+            other.resources.knowledge -= knowledge_stolen
+            
+            agent.influence = max(0, agent.influence - 5)
+            agent.stats["betrayals"] += 1
+            self.global_stats["total_betrayals"] += 1
+            
+            agent.update_relationship(other.id, -70)
+            other.update_relationship(agent.id, -90)
+            other.update_public_reputation(agent.id, -60)
+            
+            # Others who witness lose trust
+            for witness in others:
+                if witness.id != other.id:
+                    witness.update_relationship(agent.id, -20)
+                    witness.update_public_reputation(agent.id, -25)
+                    witness.add_memory(f"I witnessed {agent.name} betray {other.name}! Unforgivable!", importance=4)
+            
+            agent.gain_skill_exp("Deception", 15)
+            
+            result = f"🗡️ {agent.name} BETRAYED {other.name}! Stole {stolen} bits and {knowledge_stolen} knowledge!"
+            agent.add_memory(f"I betrayed {other.name}. I took {stolen} bits but my reputation suffered.", importance=5)
+            other.add_memory(f"{agent.name} BETRAYED ME! They stole everything! I will NEVER forgive this!", importance=5)
+        else:
+            result = f"❓ {agent.name} had no one to betray (or not trusted enough)"
+
+    # ===== GIFT =====
+    elif action == "GIFT":
+        other = self.find_agent_by_name(target, others)
+        if other and agent.resources.bits >= 2:
+            gift_amount = min(agent.resources.bits, random.randint(2, 4))
+            agent.resources.bits -= gift_amount
+            other.resources.bits += gift_amount
+            
+            trust_gain = gift_amount * 5
+            agent.update_relationship(other.id, trust_gain)
+            other.update_relationship(agent.id, trust_gain + 5)
+            agent.update_public_reputation(other.id, trust_gain)
+            other.update_public_reputation(agent.id, trust_gain)
+            
+            agent.gain_skill_exp("Diplomacy", 5)
+            
+            result = f"🎁 {agent.name} gifted {gift_amount} bits to {other.name} (trust +{trust_gain})"
+            agent.add_memory(f"I gave {gift_amount} bits to {other.name} as a gift.", importance=2)
+            other.add_memory(f"{agent.name} generously gave me {gift_amount} bits!", importance=3)
+        else:
+            result = f"❓ {agent.name} wanted to give a gift but couldn't"
+
+    # ===== CHALLENGE =====
+    elif action == "CHALLENGE":
+        other = self.find_agent_by_name(target, others)
+        if other:
+            agent_power = agent.get_skill_level("Combat") * 10 + agent.energy
+            other_power = other.get_skill_level("Combat") * 10 + other.energy
+            
+            agent_roll = agent_power + random.randint(1, 20)
+            other_roll = other_power + random.randint(1, 20)
+            
+            if agent_roll > other_roll:
+                # Agent wins
+                winnings = min(other.resources.bits, random.randint(2, 5))
+                influence_gain = random.randint(2, 5)
+                
+                agent.resources.bits += winnings
+                other.resources.bits -= winnings
+                agent.influence += influence_gain
+                other.influence = max(0, other.influence - 2)
+                
+                agent.stats["damage_dealt"] += 1
+                other.stats["damage_received"] += 1
+                
+                result = f"⚔️ {agent.name} defeated {other.name} in a challenge! (+{winnings} bits, +{influence_gain} influence)"
+                agent.add_memory(f"I challenged {other.name} and won! Gained {winnings} bits.", importance=3)
+                other.add_memory(f"{agent.name} challenged me and I lost...", importance=3)
+            else:
+                # Other wins
+                losses = min(agent.resources.bits, random.randint(1, 3))
+                agent.resources.bits -= losses
+                other.resources.bits += losses
+                agent.influence = max(0, agent.influence - 2)
+                
+                agent.stats["damage_received"] += 1
+                other.stats["damage_dealt"] += 1
+                
+                result = f"⚔️ {agent.name} challenged {other.name} but LOST! (-{losses} bits)"
+                agent.add_memory(f"I foolishly challenged {other.name} and lost!", importance=3)
+                other.add_memory(f"I defended myself against {agent.name}'s challenge and won!", importance=3)
+            
+            agent.gain_skill_exp("Combat", 8)
+            other.gain_skill_exp("Combat", 5)
+            
+            agent.update_relationship(other.id, -15)
+            other.update_relationship(agent.id, -15)
+        else:
+            result = f"❓ {agent.name} looked for someone to challenge but found no one"
+
+    # ===== TEACH =====
+    elif action == "TEACH":
+        other = self.find_agent_by_name(target, others)
+        if other:
+            # Find a skill agent is good at
+            teachable_skills = [s for s, l in agent.skills.items() if l >= 2]
+            if teachable_skills:
+                skill = random.choice(teachable_skills)
+                if other.skills.get(skill, 0) < agent.skills[skill]:
+                    other.gain_skill_exp(skill, 10)
+                    agent.update_relationship(other.id, 10)
+                    other.update_relationship(agent.id, 15)
+                    agent.influence += 2
+                    
+                    agent.gain_skill_exp("Leadership", 5)
+                    
+                    result = f"📚 {agent.name} taught {other.name} about {skill}!"
+                    agent.add_memory(f"I shared my knowledge of {skill} with {other.name}.", importance=2)
+                    other.add_memory(f"{agent.name} taught me about {skill}. Very helpful!", importance=3)
+                else:
+                    result = f"📚 {other.name} already knows as much {skill} as {agent.name}"
+            else:
+                result = f"📚 {agent.name} doesn't have enough skill to teach"
+        else:
+            result = f"❓ {agent.name} wanted to teach but found no one"
+
+    # ===== STUDY =====
+    elif action == "STUDY":
+        knowledge_gain = 1
+        if agent.location == "The Archive":
+            knowledge_gain += 2
+            agent.gain_skill_exp("Lore", 5)
+        knowledge_gain += agent.get_skill_level("Research")
+        knowledge_gain += effects.get("knowledge_bonus", 0)
+        
+        agent.resources.knowledge += knowledge_gain
+        agent.energy -= 2
+        
+        agent.gain_skill_exp("Research", 5)
+        
+        result = f"📖 {agent.name} studied and gained {knowledge_gain} knowledge"
+        agent.add_memory(f"I spent time studying and learned new things (+{knowledge_gain} knowledge).")
+        
+        # Check knowledge quest
+        for quest in agent.quests:
+            if quest.quest_type == "resource" and quest.resource == "knowledge" and not quest.completed:
+                if quest.update_progress(knowledge_gain):
+                    result += f" 🎯 Quest complete: {quest.name}!"
+
+    # ===== SCHEME =====
+    elif action == "SCHEME":
+        success_chance = 30 + agent.get_skill_level("Deception") * 15
+        
+        if random.randint(0, 100) < success_chance:
+            # Successful scheme
+            benefit = random.choice(["bits", "knowledge", "influence"])
+            amount = random.randint(2, 4)
+            
+            if benefit == "bits":
+                agent.resources.bits += amount
+            elif benefit == "knowledge":
+                agent.resources.knowledge += amount
+            else:
+                agent.influence += amount
+            
+            agent.gain_skill_exp("Deception", 8)
+            
+            result = f"🕵️ {agent.name} schemed successfully (+{amount} {benefit})"
+            agent.add_memory(f"My secret scheme worked! Gained {amount} {benefit}.", importance=2)
+        else:
+            # Discovered!
+            agent.influence = max(0, agent.influence - 5)
+            for other in others:
+                other.update_relationship(agent.id, -10)
+                other.update_public_reputation(agent.id, -15)
+                other.add_memory(f"I discovered {agent.name} was scheming! Suspicious...", importance=3)
+            
+            result = f"🕵️ {agent.name}'s scheme was DISCOVERED! Reputation damaged."
+            agent.add_memory("My scheme was discovered. I need to be more careful.", importance=3)
+
+    # ===== RECRUIT =====
+    elif action == "RECRUIT":
+        other = self.find_agent_by_name(target, others)
+        if other and agent.faction_id:
+            faction = self.get_faction(agent.faction_id)
+            if faction and other.faction_id is None:
+                relationship = agent.get_relationship(other.id)
+                success_chance = 20 + relationship
+                success_chance += agent.get_skill_level("Leadership") * 10
+                success_chance += agent.get_skill_level("Persuasion") * 5
+                
+                if random.randint(0, 100) < success_chance:
+                    faction.add_member(other.id)
+                    other.faction_id = faction.id
+                    agent.update_relationship(other.id, 15)
+                    other.update_relationship(agent.id, 15)
+                    
+                    agent.gain_skill_exp("Leadership", 10)
+                    
+                    result = f"🏛️ {agent.name} recruited {other.name} to {faction.name}!"
+                    agent.add_memory(f"I successfully recruited {other.name} to our faction!", importance=3)
+                    other.add_memory(f"I joined {faction.name}, recruited by {agent.name}.", importance=3)
+                    
+                    # Check faction quest
+                    for quest in agent.quests:
+                        if quest.quest_type == "faction" and not quest.completed:
+                            if quest.update_progress(len(faction.members) - quest.current_progress):
+                                result += f" 🎯 Quest complete: {quest.name}!"
+                else:
+                    result = f"🏛️ {other.name} declined to join {faction.name}"
+                    agent.add_memory(f"I tried to recruit {other.name} but they declined.")
+            else:
+                if other.faction_id:
+                    result = f"🏛️ {other.name} is already in a faction"
+                else:
+                    result = f"🏛️ Something went wrong with recruitment"
+        else:
+            if not agent.faction_id:
+                result = f"🏛️ {agent.name} needs to be in a faction to recruit"
+            else:
+                result = f"❓ {agent.name} couldn't find {target} to recruit"
+
+    # ===== FORM_FACTION =====
+    elif action == "FORM_FACTION":
+        if agent.faction_id:
+            result = f"🏛️ {agent.name} is already in a faction"
+        elif agent.influence < 10:
+            result = f"🏛️ {agent.name} needs at least 10 influence to form a faction (has {agent.influence})"
+        else:
+            faction_name = target if target else f"The {agent.name} Collective"
+            agent.influence -= 10
+            faction = self.create_faction(faction_name, agent)
+            
+            agent.gain_skill_exp("Leadership", 15)
+            
+            result = f"🏛️ {agent.name} founded a new faction: {faction_name}!"
+            agent.add_memory(f"I founded my own faction: {faction_name}!", importance=5)
+
+    # ===== DEFAULT =====
+    else:
+        result = f"❓ {agent.name} seemed confused (unknown action: {action})"
+        agent.add_memory("I felt confused and couldn't decide what to do.")
+
+    return result
+
+def run_tick(self) -> List[str]:
+    """Run one simulation tick"""
+    self.tick_count += 1
+    
+    print(f"\n{'='*70}")
+    print(f"📍 TICK {self.tick_count} | Season: {self.current_season.value} | Active Events: {len(self.active_events)}")
+    print('='*70)
+    
+    results = []
+    
+    # Update season
+    self.update_season()
+    
+    # Update market
+    self.update_market()
+    
+    # Roll for world event
+    event = self.roll_world_event()
+    if event:
+        self.apply_world_event(event)
+    
+    # Process existing events
+    self.tick_world_events()
+    
+    active = self.get_active_agents()
+    
+    if not active:
+        print("  ⚠ No active agents!")
+        return results
+    
+    random.shuffle(active)
+    
+    for agent in active:
+        agent.stats["ticks_survived"] += 1
+        
+        # Check for dormancy
+        if agent.energy <= 0:
+            agent.is_dormant = True
+            self.global_stats["agents_gone_dormant"] += 1
+            result = f"💀 {agent.name} has gone DORMANT (0 energy)"
+            results.append(result)
+            self.log(result, "event", agent.id)
+            continue
+        
+        # Get perception
+        others = [a for a in self.get_agents_at_location(agent.location) 
+                  if a.id != agent.id]
+        
+        # Detailed output for watched agent
+        is_watched = self.watched_agent_id == agent.id
+        
+        if is_watched:
+            print(f"\n  {'='*50}")
+            print(f"  👁️ WATCHING: {agent.name}")
+            print(f"  {'='*50}")
+            print(f"  Location: {agent.location}")
+            print(f"  Energy: {agent.energy}/{agent.max_energy}")
+            print(f"  Resources: Bits={agent.resources.bits}, Knowledge={agent.resources.knowledge}, Artifacts={agent.resources.artifacts}")
+            print(f"  Influence: {agent.influence}")
+            print(f"  Recent Thoughts: {agent.thoughts[-2:] if agent.thoughts else 'None'}")
+            print(f"  Others here: {[o.name for o in others]}")
+        else:
+            print(f"\n  🤖 {agent.name}'s turn (E:{agent.energy} B:{agent.resources.bits} @{agent.location})")
+        
+        # Build prompt and get decision
+        prompt = self.build_prompt(agent, others)
+        decision = self.get_llm_decision(agent, prompt)
+        
+        print(f"     → {decision.get('action')} {decision.get('target') or ''}")
+        if is_watched:
+            print(f"     Reasoning: {decision.get('reasoning', 'N/A')}")
+            if decision.get("thought"):
+                print(f"     💭 Thought: {decision.get('thought')}")
+        
+        # Execute action
+        result = self.execute_action(agent, decision, others)
+        results.append(result)
+        self.log(result, "action", agent.id)
+        
+        # Check achievements
+        new_achievements = agent.check_achievements()
+        for ach in new_achievements:
+            self.log(f"🏆 {agent.name} earned achievement: {ach}", "achievement", agent.id)
+        
+        # Location energy modifier
+        effects = self.get_location_effects(agent.location)
+        energy_mod = effects.get("energy_modifier", 0)
+        
+        # Base energy decay + location modifier
+        decay = 1 - energy_mod // 2
+        agent.energy = max(0, agent.energy - decay)
+        
+        # Passive resource gain from location
+        if effects.get("resource_bonus"):
+            resource = effects["resource_bonus"].value
+            if random.random() < 0.2:  # 20% chance
+                agent.resources.add(resource, 1)
+        
+        # Skill experience from location
+        for skill in effects.get("skills_boost", []):
+            if random.random() < 0.1:  # 10% chance
+                agent.gain_skill_exp(skill, 1)
+    
+    # Show summary
+    self.print_tick_summary()
+    
+    self.save_data()
+    return results
+
+def print_tick_summary(self):
+    """Print end-of-tick summary"""
+    print(f"\n📊 TICK {self.tick_count} SUMMARY:")
+    print("-" * 60)
+    
+    # Sort by power
+    sorted_agents = sorted(self.agents.values(), key=lambda a: a.get_total_power(), reverse=True)
+    
+    for agent in sorted_agents:
+        status = "💀" if agent.is_dormant else "✓"
+        faction_mark = ""
+        if agent.faction_id:
+            faction = self.get_faction(agent.faction_id)
+            if faction:
+                is_leader = faction.leader_id == agent.id
+                faction_mark = f" 👑{faction.name[:8]}" if is_leader else f" 🏛️{faction.name[:8]}"
+        
+        power = agent.get_total_power()
+        print(f"  {status} {agent.name:12} | E:{agent.energy:2} B:{agent.resources.bits:3} K:{agent.resources.knowledge:2} | Inf:{agent.influence:2} Pow:{power:3} | {agent.location[:12]}{faction_mark}")
+    
+    # Active events
+    if self.active_events:
+        print(f"\n⚡ Active Events:")
+        for ae in self.active_events:
+            print(f"   - {ae.event['name']} ({ae.remaining_ticks} ticks remaining)")
+    
+    # Factions
+    if self.factions:
+        print(f"\n🏛️ Factions:")
+        for faction in self.factions.values():
+            leader = self.agents.get(faction.leader_id)
+            leader_name = leader.name if leader else "Unknown"
+            print(f"   - {faction.name}: {len(faction.members)} members, led by {leader_name}")
+
+def print_status(self):
+    """Print detailed status of all agents"""
+    print("\n" + "="*70)
+    print("📋 DETAILED AGENT STATUS")
+    print("="*70)
+    
+    for agent in sorted(self.agents.values(), key=lambda a: a.name):
+        status = "💀 DORMANT" if agent.is_dormant else "✓ Active"
+        print(f"\n{'─'*60}")
+        print(f"  {agent.name} ({agent.id}) - {status}")
+        print(f"{'─'*60}")
+        print(f"  Drive: {agent.core_drive}")
+        print(f"  Traits: {', '.join(agent.personality_traits)}")
+        print(f"  Location: {agent.location}")
+        print(f"  Energy: {agent.energy}/{agent.max_energy}")
+        print(f"  Resources: Bits={agent.resources.bits}, Knowledge={agent.resources.knowledge}, Artifacts={agent.resources.artifacts}, Favor={agent.resources.favor}")
+        print(f"  Influence: {agent.influence}")
+        print(f"  Power Score: {agent.get_total_power()}")
+        
+        # Skills
+        notable_skills = [(s, l) for s, l in agent.skills.items() if l > 0]
+        if notable_skills:
+            print(f"  Skills: {', '.join([f'{s}:{l}' for s,l in notable_skills])}")
+        
+        # Faction
+        if agent.faction_id:
+            faction = self.get_faction(agent.faction_id)
+            if faction:
+                role = "Leader" if faction.leader_id == agent.id else "Member"
+                print(f"  Faction: {faction.name} ({role})")
+        
+        # Relationships
+        if agent.relationships:
+            rels = [(self.agents[aid].name if aid in self.agents else aid, score) 
+                    for aid, score in agent.relationships.items()]
+            rels.sort(key=lambda x: x[1], reverse=True)
+            print(f"  Relationships: {', '.join([f'{name}:{score:+d}' for name, score in rels[:5]])}")
+        
+        # Quests
+        active_quests = [q for q in agent.quests if not q.completed]
+        if active_quests:
+            print(f"  Active Quests: {', '.join([f'{q.name} ({q.current_progress}/{q.target_amount})' for q in active_quests])}")
+        
+        # Achievements
+        if agent.achievements:
+            print(f"  Achievements: {', '.join(agent.achievements)}")
+        
+        # Recent memories
+        recent = agent.get_recent_memories(2)
+        if recent:
+            print(f"  Recent Memory: {recent[-1][:60]}...")
+
+def print_statistics(self):
+    """Print global statistics"""
+    print("\n" + "="*70)
+    print("📈 GLOBAL STATISTICS")
+    print("="*70)
+    
+    print(f"\n  🕐 Simulation Progress:")
+    print(f"     Total Ticks: {self.tick_count}")
+    print(f"     Current Season: {self.current_season.value}")
+    print(f"     Active Events: {len(self.active_events)}")
+    
+    print(f"\n  👥 Population:")
+    active = len([a for a in self.agents.values() if not a.is_dormant])
+    dormant = len([a for a in self.agents.values() if a.is_dormant])
+    print(f"     Active Agents: {active}")
+    print(f"     Dormant Agents: {dormant}")
+    print(f"     Factions: {len(self.factions)}")
+    
+    print(f"\n  💰 Economy:")
+    total_bits = sum(a.resources.bits for a in self.agents.values())
+    total_knowledge = sum(a.resources.knowledge for a in self.agents.values())
+    total_artifacts = sum(a.resources.artifacts for a in self.agents.values())
+    print(f"     Total Bits: {total_bits}")
+    print(f"     Total Knowledge: {total_knowledge}")
+    print(f"     Total Artifacts: {total_artifacts}")
+    print(f"     Market Prices: {', '.join([f'{k}:{v:.2f}' for k,v in self.market_prices.items()])}")
+    
+    print(f"\n  🎯 Activity:")
+    print(f"     Total Trades: {self.global_stats['total_trades']}")
+    print(f"     Total Alliances: {self.global_stats['total_alliances']}")
+    print(f"     Total Betrayals: {self.global_stats['total_betrayals']}")
+    print(f"     Total Thefts: {self.global_stats['total_steals']}")
+    print(f"     World Events: {self.global_stats['world_events_occurred']}")
+    
+    print(f"\n  🏆 Leaderboards:")
+    
+    # Richest
+    richest = max(self.agents.values(), key=lambda a: a.resources.bits, default=None)
+    if richest:
+        print(f"     Richest: {richest.name} ({richest.resources.bits} bits)")
+    
+    # Most influential
+    influential = max(self.agents.values(), key=lambda a: a.influence, default=None)
+    if influential:
+        print(f"     Most Influential: {influential.name} ({influential.influence} influence)")
+    
+    # Most powerful
+    powerful = max(self.agents.values(), key=lambda a: a.get_total_power(), default=None)
+    if powerful:
+        print(f"     Most Powerful: {powerful.name} ({powerful.get_total_power()} power)")
+    
+    # Most achievements
+    achieved = max(self.agents.values(), key=lambda a: len(a.achievements), default=None)
+    if achieved and achieved.achievements:
+        print(f"     Most Achievements: {achieved.name} ({len(achieved.achievements)} achievements)")
+
+def print_relationships(self):
+    """Print relationship matrix"""
+    print("\n" + "="*70)
+    print("💕 RELATIONSHIP MATRIX")
+    print("="*70)
+    
+    agents = list(self.agents.values())
+    
+    # Header
+    names = [a.name[:8] for a in agents]
+    print(f"\n         {'  '.join([f'{n:>8}' for n in names])}")
+    print("         " + "-" * (len(agents) * 10))
+    
+    for agent in agents:
+        row = []
+        for other in agents:
+            if agent.id == other.id:
+                row.append("   ---  ")
+            else:
+                rel = agent.get_relationship(other.id)
+                if rel > 50:
+                    symbol = "💚"
+                elif rel > 20:
+                    symbol = "💛"
+                elif rel < -50:
+                    symbol = 

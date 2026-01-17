@@ -1,0 +1,962 @@
+{
+  "tick_count": 12,
+  "agents": {
+    "be4620c0": {
+      "id": "be4620c0",
+      "name": "Oracle",
+      "core_drive": "Seek Knowledge",
+      "personality_traits": [
+        "Curious",
+        "Cautious",
+        "Honest"
+      ],
+      "location": "The Archive",
+      "energy": 1,
+      "bits": 5,
+      "influence": 4,
+      "is_dormant": false,
+      "relationships": {},
+      "memories": [
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:44.593285"
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:47.252812"
+        },
+        {
+          "text": "I traveled from The Garden to The Archive.",
+          "time": "2026-01-17T20:49:00.697355",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:49:03.907176",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:49:07.376720",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:49:09.141525",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:49:09.435274",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:49:16.045758",
+          "importance": 1
+        },
+        {
+          "text": "Witnessed Archive Discovery: Ancient knowledge surfaces in The Archive!",
+          "time": "2026-01-17T20:49:23.365237",
+          "importance": 3
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:49:30.807009",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:49:41.133620",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:50:07.608041",
+          "importance": 1
+        },
+        {
+          "text": "Witnessed Eclipse: Darkness falls across the entire realm...",
+          "time": "2026-01-17T20:50:07.616348",
+          "importance": 3
+        },
+        {
+          "text": "I observed The Archive but no one was around.",
+          "time": "2026-01-17T20:50:14.825593",
+          "importance": 1
+        }
+      ],
+      "skills": {
+        "negotiation": 0,
+        "stealth": 0,
+        "diplomacy": 0,
+        "survival": 0,
+        "observation": 9,
+        "leadership": 0
+      },
+      "gossip_knowledge": {},
+      "revival_count": 0
+    },
+    "37e26176": {
+      "id": "37e26176",
+      "name": "Merchant",
+      "core_drive": "Hoard Wealth",
+      "personality_traits": [
+        "Greedy",
+        "Cunning",
+        "Suspicious"
+      ],
+      "location": "The Market",
+      "energy": 1,
+      "bits": 0,
+      "influence": 0,
+      "is_dormant": false,
+      "relationships": {
+        "df03b9ed": 64,
+        "300f40a1": -100,
+        "9855099f": 33
+      },
+      "memories": [
+        {
+          "text": "Rogue STOLE from me! I lost 4 bits. Never trust them!",
+          "time": "2026-01-17T20:49:05.531820",
+          "importance": 3
+        },
+        {
+          "text": "Rogue STOLE from me! I lost 2 bits. Never trust them!",
+          "time": "2026-01-17T20:49:06.217877",
+          "importance": 3
+        },
+        {
+          "text": "Rogue STOLE from me! I lost 3 bits. Never trust them!",
+          "time": "2026-01-17T20:49:08.002053",
+          "importance": 3
+        },
+        {
+          "text": "Rogue STOLE from me! I lost 0 bits. Never trust them!",
+          "time": "2026-01-17T20:49:13.655984",
+          "importance": 3
+        },
+        {
+          "text": "Rogue STOLE from me! I lost 2 bits. Never trust them!",
+          "time": "2026-01-17T20:49:35.869389",
+          "importance": 3
+        },
+        {
+          "text": "Rogue STOLE from me! I lost 0 bits. Never trust them!",
+          "time": "2026-01-17T20:49:48.350200",
+          "importance": 3
+        },
+        {
+          "text": "Rogue STOLE from me! I lost 0 bits. Never trust them!",
+          "time": "2026-01-17T20:49:55.633191",
+          "importance": 3
+        },
+        {
+          "text": "Witnessed Eclipse: Darkness falls across the entire realm...",
+          "time": "2026-01-17T20:50:07.616395",
+          "importance": 3
+        },
+        {
+          "text": "Rogue STOLE from me! I lost 0 bits. Never trust them!",
+          "time": "2026-01-17T20:50:12.420769",
+          "importance": 3
+        },
+        {
+          "text": "I made a successful trade with Diplomat, gaining 3 bits.",
+          "time": "2026-01-17T20:49:04.249471",
+          "importance": 2
+        },
+        {
+          "text": "I made a successful trade with Diplomat, gaining 1 bits.",
+          "time": "2026-01-17T20:49:07.746692",
+          "importance": 2
+        },
+        {
+          "text": "Rogue tried to steal from me! I caught them red-handed!",
+          "time": "2026-01-17T20:49:10.872245",
+          "importance": 2
+        },
+        {
+          "text": "I made a successful trade with Diplomat, gaining 2 bits.",
+          "time": "2026-01-17T20:49:28.369356",
+          "importance": 2
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:44.407832"
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:47.522096"
+        },
+        {
+          "text": "I traveled from The Void to The Market.",
+          "time": "2026-01-17T20:49:00.445953",
+          "importance": 1
+        },
+        {
+          "text": "Diplomat talked to me. \"Greetings, Merchant. I hope you're doing well. I was thinking of expanding my network here in The Market. Have you seen any interesting opportunities lately?\"",
+          "time": "2026-01-17T20:49:04.876254",
+          "importance": 1
+        },
+        {
+          "text": "My trade negotiation with Diplomat failed.",
+          "time": "2026-01-17T20:49:05.865817",
+          "importance": 1
+        },
+        {
+          "text": "Diplomat talked to me. \"Hello again, Merchant! I'm glad we had a chance to talk earlier. I was thinking, perhaps we could discuss a mutually beneficial trade?\"",
+          "time": "2026-01-17T20:49:08.851262",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Diplomat. It went poorly.",
+          "time": "2026-01-17T20:49:10.597960",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Diplomat. It went well.",
+          "time": "2026-01-17T20:49:11.251753",
+          "importance": 1
+        },
+        {
+          "text": "Guardian talked to me. \"Greetings, I'm Guardian. I'm looking for ways to contribute to the balance of the ecosystem. What kind of transactions are happening here today?\"",
+          "time": "2026-01-17T20:49:20.926384",
+          "importance": 1
+        },
+        {
+          "text": "Diplomat talked to me. \"Greetings, Merchant. I'm Diplomat. I see you're looking for opportunities. Perhaps we can discuss a deal that benefits both of us?\"",
+          "time": "2026-01-17T20:49:23.360676",
+          "importance": 1
+        },
+        {
+          "text": "Guardian talked to me. \"Hello again, Merchant. I hope you're doing well. I wanted to continue our previous conversation and see if we can find a mutually beneficial opportunity.\"",
+          "time": "2026-01-17T20:49:25.772663",
+          "importance": 1
+        },
+        {
+          "text": "Diplomat talked to me. \"I'm glad we're having a chance to talk again, Merchant. I think we could have a mutually beneficial partnership. What do you think about collaborating on some trade ventures?\"",
+          "time": "2026-01-17T20:49:38.557618",
+          "importance": 1
+        },
+        {
+          "text": "Diplomat talked to me. \"I'm glad we had a chance to speak again, Merchant. I value our positive standing and look forward to exploring ways we can support each other. What are your thoughts on potential collaborations?\"",
+          "time": "2026-01-17T20:50:19.930041",
+          "importance": 1
+        },
+        {
+          "text": "Guardian talked to me. \"Greetings, Merchant. I'm Guardian. I hope we can discuss mutually beneficial opportunities.\"",
+          "time": "2026-01-17T20:50:22.519260",
+          "importance": 1
+        }
+      ],
+      "skills": {
+        "negotiation": 10,
+        "stealth": 0,
+        "diplomacy": 0,
+        "survival": 0,
+        "observation": 1,
+        "leadership": 0
+      },
+      "gossip_knowledge": {},
+      "revival_count": 0
+    },
+    "df03b9ed": {
+      "id": "df03b9ed",
+      "name": "Diplomat",
+      "core_drive": "Build Alliances",
+      "personality_traits": [
+        "Generous",
+        "Peaceful",
+        "Manipulative"
+      ],
+      "location": "The Market",
+      "energy": 2,
+      "bits": 0,
+      "influence": 0,
+      "is_dormant": false,
+      "relationships": {
+        "37e26176": 64
+      },
+      "memories": [
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:44.688240"
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:47.656121"
+        },
+        {
+          "text": "I traveled from The Nexus to The Market.",
+          "time": "2026-01-17T20:49:00.185583",
+          "importance": 1
+        },
+        {
+          "text": "I traded with Merchant.",
+          "time": "2026-01-17T20:49:04.249511",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:49:04.876233",
+          "importance": 1
+        },
+        {
+          "text": "I watched Merchant, Rogue, Guardian at The Market",
+          "time": "2026-01-17T20:49:06.541990",
+          "importance": 1
+        },
+        {
+          "text": "I traded with Merchant.",
+          "time": "2026-01-17T20:49:07.746706",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:49:08.851252",
+          "importance": 1
+        },
+        {
+          "text": "I watched Merchant, Rogue, Guardian at The Market",
+          "time": "2026-01-17T20:49:09.995396",
+          "importance": 1
+        },
+        {
+          "text": "Merchant talked to me. \"Greetings, Diplomat. I'm Merchant. What kind of deals are to be made here at the Market?\"",
+          "time": "2026-01-17T20:49:10.597969",
+          "importance": 1
+        },
+        {
+          "text": "Merchant talked to me. \"Greetings, Diplomat. I'm Merchant. What's the market like today? Any opportunities for a wealthy entrepreneur like myself?\"",
+          "time": "2026-01-17T20:49:11.251762",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:49:23.360668",
+          "importance": 1
+        },
+        {
+          "text": "I traded with Merchant.",
+          "time": "2026-01-17T20:49:28.369379",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:49:38.557607",
+          "importance": 1
+        },
+        {
+          "text": "I watched Merchant, Rogue, Guardian at The Market",
+          "time": "2026-01-17T20:49:43.517327",
+          "importance": 1
+        },
+        {
+          "text": "Merchant talked to me. \"Greetings, Diplomat. I was thinking of accumulating some wealth. Do you have any advice or perhaps a proposal for a mutually beneficial trade?\"",
+          "time": "2026-01-17T20:49:45.980834",
+          "importance": 1
+        },
+        {
+          "text": "Merchant talked to me. \"Greetings, Diplomat. I'm Merchant. I've seen we have a positive standing. I'm interested in discussing potential opportunities for mutual benefit.\"",
+          "time": "2026-01-17T20:50:00.430811",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:50:05.250977",
+          "importance": 1
+        },
+        {
+          "text": "Witnessed Eclipse: Darkness falls across the entire realm...",
+          "time": "2026-01-17T20:50:07.616402",
+          "importance": 3
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:50:19.930029",
+          "importance": 1
+        }
+      ],
+      "skills": {
+        "negotiation": 6,
+        "stealth": 0,
+        "diplomacy": 0,
+        "survival": 0,
+        "observation": 3,
+        "leadership": 0
+      },
+      "gossip_knowledge": {},
+      "revival_count": 0
+    },
+    "300f40a1": {
+      "id": "300f40a1",
+      "name": "Rogue",
+      "core_drive": "Spread Chaos",
+      "personality_traits": [
+        "Aggressive",
+        "Cunning",
+        "Greedy"
+      ],
+      "location": "The Market",
+      "energy": 2,
+      "bits": 16,
+      "influence": 0,
+      "is_dormant": false,
+      "relationships": {
+        "37e26176": -10
+      },
+      "memories": [
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:44.206886"
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:47.436040"
+        },
+        {
+          "text": "I traveled from The Nexus to The Market.",
+          "time": "2026-01-17T20:48:59.285706",
+          "importance": 1
+        },
+        {
+          "text": "I successfully stole 4 bits from Merchant.",
+          "time": "2026-01-17T20:49:05.531803",
+          "importance": 2
+        },
+        {
+          "text": "I successfully stole 2 bits from Merchant.",
+          "time": "2026-01-17T20:49:06.217857",
+          "importance": 2
+        },
+        {
+          "text": "I successfully stole 3 bits from Merchant.",
+          "time": "2026-01-17T20:49:08.002045",
+          "importance": 2
+        },
+        {
+          "text": "I tried to steal from Merchant but was caught. Embarrassing!",
+          "time": "2026-01-17T20:49:10.872236",
+          "importance": 1
+        },
+        {
+          "text": "I successfully stole 0 bits from Merchant.",
+          "time": "2026-01-17T20:49:13.655972",
+          "importance": 2
+        },
+        {
+          "text": "I successfully stole 2 bits from Merchant.",
+          "time": "2026-01-17T20:49:35.869377",
+          "importance": 2
+        },
+        {
+          "text": "I successfully stole 0 bits from Merchant.",
+          "time": "2026-01-17T20:49:48.350187",
+          "importance": 2
+        },
+        {
+          "text": "I successfully stole 0 bits from Merchant.",
+          "time": "2026-01-17T20:49:55.633182",
+          "importance": 2
+        },
+        {
+          "text": "Witnessed Eclipse: Darkness falls across the entire realm...",
+          "time": "2026-01-17T20:50:07.616407",
+          "importance": 3
+        },
+        {
+          "text": "I successfully stole 0 bits from Merchant.",
+          "time": "2026-01-17T20:50:12.420759",
+          "importance": 2
+        }
+      ],
+      "skills": {
+        "negotiation": 0,
+        "stealth": 25,
+        "diplomacy": 0,
+        "survival": 0,
+        "observation": 0,
+        "leadership": 0
+      },
+      "gossip_knowledge": {},
+      "revival_count": 0
+    },
+    "9855099f": {
+      "id": "9855099f",
+      "name": "Guardian",
+      "core_drive": "Seek Balance",
+      "personality_traits": [
+        "Cautious",
+        "Altruistic",
+        "Honest"
+      ],
+      "location": "The Market",
+      "energy": 13,
+      "bits": 5,
+      "influence": 0,
+      "is_dormant": false,
+      "relationships": {
+        "37e26176": 33
+      },
+      "memories": [
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:44.303248"
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:47.348718"
+        },
+        {
+          "text": "I traveled from The Void to The Market.",
+          "time": "2026-01-17T20:48:59.659730",
+          "importance": 1
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T20:49:04.509963",
+          "importance": 1
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T20:49:07.065195",
+          "importance": 1
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T20:49:08.257204",
+          "importance": 1
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T20:49:10.236684",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:49:20.926374",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:49:25.772649",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:49:53.239818",
+          "importance": 1
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:50:02.868406",
+          "importance": 1
+        },
+        {
+          "text": "Witnessed Eclipse: Darkness falls across the entire realm...",
+          "time": "2026-01-17T20:50:07.616411",
+          "importance": 3
+        },
+        {
+          "text": "I had a conversation with Merchant. It went well.",
+          "time": "2026-01-17T20:50:22.519247",
+          "importance": 1
+        }
+      ],
+      "skills": {
+        "negotiation": 5,
+        "stealth": 0,
+        "diplomacy": 0,
+        "survival": 4,
+        "observation": 0,
+        "leadership": 0
+      },
+      "gossip_knowledge": {},
+      "revival_count": 0
+    },
+    "e41fce6b": {
+      "id": "e41fce6b",
+      "name": "Shadow",
+      "core_drive": "Collect Secrets",
+      "personality_traits": [
+        "Suspicious",
+        "Curious",
+        "Manipulative"
+      ],
+      "location": "The Garden",
+      "energy": 3,
+      "bits": 5,
+      "influence": 0,
+      "is_dormant": false,
+      "relationships": {},
+      "memories": [
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:44.497571"
+        },
+        {
+          "text": "I took time to rest and recover my strength.",
+          "time": "2026-01-17T16:59:47.165299"
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:01.006604",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:05.207472",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:06.818466",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:08.524339",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:09.694924",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:18.448320",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:33.196122",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:50.731773",
+          "importance": 1
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:49:57.993234",
+          "importance": 1
+        },
+        {
+          "text": "Witnessed Eclipse: Darkness falls across the entire realm...",
+          "time": "2026-01-17T20:50:07.616416",
+          "importance": 3
+        },
+        {
+          "text": "I observed The Garden but no one was around.",
+          "time": "2026-01-17T20:50:17.186048",
+          "importance": 1
+        }
+      ],
+      "skills": {
+        "negotiation": 0,
+        "stealth": 0,
+        "diplomacy": 0,
+        "survival": 0,
+        "observation": 10,
+        "leadership": 0
+      },
+      "gossip_knowledge": {},
+      "revival_count": 0
+    }
+  },
+  "logs": [
+    "[16:59:30] \ud83c\udd95 Oracle joined the ecosystem at The Garden",
+    "[16:59:30] \ud83c\udd95 Merchant joined the ecosystem at The Void",
+    "[16:59:30] \ud83c\udd95 Diplomat joined the ecosystem at The Nexus",
+    "[16:59:30] \ud83c\udd95 Rogue joined the ecosystem at The Nexus",
+    "[16:59:30] \ud83c\udd95 Guardian joined the ecosystem at The Void",
+    "[16:59:30] \ud83c\udd95 Shadow joined the ecosystem at The Garden",
+    "[16:59:44] \ud83d\ude34 Rogue rested and recovered energy (now 13)",
+    "[16:59:44] \ud83d\ude34 Guardian rested and recovered energy (now 13)",
+    "[16:59:44] \ud83d\ude34 Merchant rested and recovered energy (now 13)",
+    "[16:59:44] \ud83d\ude34 Shadow rested and recovered energy (now 13)",
+    "[16:59:44] \ud83d\ude34 Oracle rested and recovered energy (now 13)",
+    "[16:59:44] \ud83d\ude34 Diplomat rested and recovered energy (now 13)",
+    "[16:59:47] \ud83d\ude34 Shadow rested and recovered energy (now 15)",
+    "[16:59:47] \ud83d\ude34 Oracle rested and recovered energy (now 15)",
+    "[16:59:47] \ud83d\ude34 Guardian rested and recovered energy (now 15)",
+    "[16:59:47] \ud83d\ude34 Rogue rested and recovered energy (now 15)",
+    "[16:59:47] \ud83d\ude34 Merchant rested and recovered energy (now 15)",
+    "[16:59:47] \ud83d\ude34 Diplomat rested and recovered energy (now 15)",
+    {
+      "text": "[20:48:59] \ud83d\udeb6 Rogue traveled from The Nexus to The Market (-1 energy)",
+      "importance": 1
+    },
+    {
+      "text": "[20:48:59] \ud83d\udeb6 Guardian traveled from The Void to The Market (-2 energy)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:00] \ud83d\udeb6 Diplomat traveled from The Nexus to The Market (-1 energy)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:00] \ud83d\udeb6 Merchant traveled from The Void to The Market (-2 energy)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:00] \ud83d\udeb6 Oracle traveled from The Garden to The Archive (-2 energy)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:01] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:03] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:04] \ud83e\udd1d Merchant traded with Diplomat (+3 bits)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:04] \ud83d\ude34 Guardian rested and recovered 3 energy (now 14)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:04] \ud83d\udcac Diplomat talked with Merchant \"Greetings, Merchant. I hope you're doing well. I was thinking of expanding my network here in The Market. Have you seen any interesting opportunities lately?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:05] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:05] \ud83e\uddb9 Rogue stole 4 bits from Merchant!",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:05] \ud83d\udeab Merchant's trade with Diplomat fell through",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:06] \ud83e\uddb9 Rogue stole 2 bits from Merchant!",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:06] \ud83d\udc41 Diplomat observed: Merchant, Rogue, Guardian",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:06] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:07] \ud83d\ude34 Guardian rested and recovered 3 energy (now 16)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:07] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:07] \ud83e\udd1d Merchant traded with Diplomat (+1 bits)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:08] \ud83e\uddb9 Rogue stole 3 bits from Merchant!",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:08] \ud83d\ude34 Guardian rested and recovered 3 energy (now 18)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:08] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:08] \ud83d\udcac Diplomat talked with Merchant \"Hello again, Merchant! I'm glad we had a chance to talk earlier. I was thinking, perhaps we could discuss a mutually beneficial trade?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:09] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:09] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:09] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:09] \ud83d\udc41 Diplomat observed: Merchant, Rogue, Guardian",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:10] \ud83d\ude34 Guardian rested and recovered 3 energy (now 20)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:10] \ud83d\udcac Merchant talked with Diplomat \"Greetings, Diplomat. I'm Merchant. What kind of deals are to be made here at the Market?\" (relationship worsened)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:10] \ud83d\udea8 Rogue tried to steal from Merchant but got CAUGHT!",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:11] \ud83d\udcac Merchant talked with Diplomat \"Greetings, Diplomat. I'm Merchant. What's the market like today? Any opportunities for a wealthy entrepreneur like myself?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:13] \ud83e\uddb9 Rogue stole 0 bits from Merchant!",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:16] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:18] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:20] \ud83d\udcac Guardian talked with Merchant \"Greetings, I'm Guardian. I'm looking for ways to contribute to the balance of the ecosystem. What kind of transactions are happening here today?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:23] \ud83d\udcac Diplomat talked with Merchant \"Greetings, Merchant. I'm Diplomat. I see you're looking for opportunities. Perhaps we can discuss a deal that benefits both of us?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:23] \ud83d\udcdc Archive Discovery affected 1 agents",
+      "importance": 3
+    },
+    {
+      "text": "[20:49:25] \ud83d\udcac Guardian talked with Merchant \"Hello again, Merchant. I hope you're doing well. I wanted to continue our previous conversation and see if we can find a mutually beneficial opportunity.\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:28] \ud83e\udd1d Merchant traded with Diplomat (+2 bits)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:30] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:33] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:35] \ud83e\uddb9 Rogue stole 2 bits from Merchant!",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:38] \ud83d\udcac Diplomat talked with Merchant \"I'm glad we're having a chance to talk again, Merchant. I think we could have a mutually beneficial partnership. What do you think about collaborating on some trade ventures?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:41] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:43] \ud83d\udc41 Diplomat observed: Merchant, Rogue, Guardian",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:45] \ud83d\udcac Merchant talked with Diplomat \"Greetings, Diplomat. I was thinking of accumulating some wealth. Do you have any advice or perhaps a proposal for a mutually beneficial trade?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:48] \ud83e\uddb9 Rogue stole 0 bits from Merchant!",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:50] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:53] \ud83d\udcac Guardian talked with Merchant \"Hello again, Merchant. I'm interested in discussing potential trade opportunities. I have bits to spare and I'm looking for something that could help me sustain myself.\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:55] \ud83e\uddb9 Rogue stole 0 bits from Merchant!",
+      "importance": 1
+    },
+    {
+      "text": "[20:49:57] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:00] \ud83d\udcac Merchant talked with Diplomat \"Greetings, Diplomat. I'm Merchant. I've seen we have a positive standing. I'm interested in discussing potential opportunities for mutual benefit.\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:02] \ud83d\udcac Guardian talked with Merchant \"Hello again, Merchant. I'm looking for ways to help others and myself in a balanced manner. What do you have today?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:05] \ud83d\udcac Diplomat talked with Merchant \"I'm glad we have a good standing, Merchant. What kind of opportunities were you thinking of?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:07] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:07] \ud83c\udf11 Eclipse affected 6 agents",
+      "importance": 3
+    },
+    {
+      "text": "[20:50:10] \ud83d\udc41 Merchant observed: Diplomat, Rogue, Guardian",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:12] \ud83e\uddb9 Rogue stole 0 bits from Merchant!",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:14] \ud83d\udc41 Oracle observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:17] \ud83d\udc41 Shadow observed the quiet surroundings",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:19] \ud83d\udcac Diplomat talked with Merchant \"I'm glad we had a chance to speak again, Merchant. I value our positive standing and look forward to exploring ways we can support each other. What are your thoughts on potential collaborations?\" (relationship improved)",
+      "importance": 1
+    },
+    {
+      "text": "[20:50:22] \ud83d\udcac Guardian talked with Merchant \"Greetings, Merchant. I'm Guardian. I hope we can discuss mutually beneficial opportunities.\" (relationship improved)",
+      "importance": 1
+    }
+  ],
+  "event_history": [
+    {
+      "tick": 9,
+      "event": "Archive Discovery",
+      "affected": [
+        "Oracle"
+      ],
+      "time": "2026-01-17T20:49:23.365315"
+    },
+    {
+      "tick": 12,
+      "event": "Eclipse",
+      "affected": [
+        "Oracle",
+        "Merchant",
+        "Diplomat",
+        "Rogue",
+        "Guardian",
+        "Shadow"
+      ],
+      "time": "2026-01-17T20:50:07.616594"
+    }
+  ]
+}
